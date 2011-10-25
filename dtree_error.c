@@ -13,7 +13,7 @@ static int error = 0;
  */
 static int xerrno = 0;
 
-#define ERRSTR_COUNT (sizeof(errstr)/sizeof(char *))
+#define ERRSTR_COUNT ((int) (sizeof(errstr)/sizeof(char *)))
 static const char *errstr[] = {
 	"Successful"
 };
