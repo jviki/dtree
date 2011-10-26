@@ -39,6 +39,12 @@ void dtree_errno_set(int e)
 	xerrno = e;
 }
 
+void dtree_error_from_errno(void)
+{
+	if(errno != 0)
+		dtree_errno_set(errno);
+}
+
 int dtree_iserror(void)
 {
 	return error != 0;

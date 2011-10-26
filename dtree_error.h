@@ -26,5 +26,11 @@ void dtree_error_set(int e);
  */
 void dtree_errno_set(int e);
 
+/**
+ * Tests errno and if it describes and error
+ * it sets the error state.
+ */
+void dtree_error_from_errno(void);
+
 #endif
 
