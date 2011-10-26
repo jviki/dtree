@@ -1,7 +1,9 @@
 #define _BSD_SOURCE // enable dir type constants
+
 #include "dtree.h"
 #include "dtree_procfs.h"
 #include "dtree_error.h"
+
 #include <stdlib.h>
 #include <errno.h>
 #include <dirent.h>
