@@ -7,6 +7,9 @@
 #ifndef DTREE_ERROR
 #define DTREE_ERROR
 
+/**
+ * Clears current error state.
+ */
 void dtree_error_clear(void);
 
 /**
