@@ -3,6 +3,7 @@
 
 #include "dtree.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 void _test_start(const char *func, const char *file, int lineno)
 {
@@ -33,6 +34,12 @@ void _test_warn(const char *func, const char *file, int lineno, const char *desc
 	fprintf(stderr, "%s\n", desc);
 }
 #define test_warn(desc) _test_warn(__func__, __FILE__, __LINE__, (desc))
+
+#define halt_on_true(t, msg) \
+	if((t) != 0) {test_fail((msg)); exit(1);}
+#define halt_on_false(f, msg)     halt_on_true(!(f), (msg))
+#define halt_on_success(err, msg) halt_on_true((err) == 0, (msg))
+#define halt_on_error(t, msg)     halt_on_true((err) != 0, (msg))
 
 #define fail_on_true(t, msg) \
 	if((t) != 0) {test_fail((msg)); return;}
