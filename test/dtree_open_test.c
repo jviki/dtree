@@ -28,14 +28,21 @@ void test_pass_invalid(void)
 		test_fail("Error is not indicated by dtree_iserror()");
 }
 
+/**
+ * Test on the real device-tree file system.
+ * It should pass on target platform.
+ */
 void test_pass_mostly_valid(void)
 {
 	int err = dtree_open("/proc/device-tree");
-	if(err != 0)
+	if(err != 0) {
 		test_fail("Open of /proc/device-tree failed, is it present on the system?");
+		return;
+	}
 	if(dtree_iserror())
 		test_fail("Error is indicated by dtree_iserror(), but should not be");
 
+	dtree_close();
 }
 
 int main(void)
