@@ -20,5 +20,11 @@ void dtree_error_clear(void);
  */
 void dtree_error_set(int e);
 
+/**
+ * Sets error state to negative and internal errno
+ * to the given value.
+ */
+void dtree_errno_set(int e);
+
 #endif
 
