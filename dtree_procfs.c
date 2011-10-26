@@ -21,7 +21,7 @@ int dtree_procfs_open(const char *rootd)
 	
 	procfs = opendir(rootd);
 	if(procfs == NULL) {
-		dtree_error_set(-1);
+		dtree_error_from_errno();
 		return -1;
 	}
 
@@ -32,7 +32,7 @@ void dtree_procfs_close(void)
 {
 	assert(procfs != NULL);
 	if(closedir(procfs) == -1)
-		dtree_error_set(-1);
+		dtree_error_from_errno();
 
 	procfs = NULL;
 }
