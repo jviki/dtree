@@ -1,4 +1,5 @@
 #define _BSD_SOURCE // enable dir type constants
+#include "dtree.h"
 #include "dtree_procfs.h"
 #include "dtree_error.h"
 #include <stdlib.h>
@@ -94,5 +95,27 @@ dtree_addr_t parse_devaddr(const char *addr, size_t addrl)
 	assert(addr[addrl] == '\0');
 	long val = strtol(addr, NULL, 16);
 	return (dtree_addr_t) val;
+}
+
+struct dtree_dev_t *build_dev(struct dirent *devdir, const char *sep)
+{
+	static const char *NULL_ENTRY = NULL;
+
+	struct dtree_dev_t *dev = NULL;
+	size_t namel = sep - devdir->d_name;
+	size_t addrl = strlen(sep + 1);
+
+	void *m = malloc(sizeof(struct dtree_dev_t) + namel + 1);
+	if(m == NULL) {
+		dtree_error_from_errno();
+		return NULL;
+	}
+
+	dev = (struct dtree_dev_t *) m;
+	dev->compat = &NULL_ENTRY; // TODO: implement
+	dev->name = copy_devname((void *) (dev + 1), devdir->d_name, namel);
+	dev->base = parse_devaddr(sep + 1, addrl);
+
+	return dev;
 }
 
