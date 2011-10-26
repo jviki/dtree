@@ -3,6 +3,8 @@
 
 void test_all_dev(const int expect)
 {
+	test_start();
+
 	struct dtree_dev_t *curr = NULL;
 	int count = 0;
 
@@ -19,6 +21,8 @@ void test_all_dev(const int expect)
 	fail_on_true(dtree_iserror(), "An error occured during traversing the device tree");
 	fail_on_true(count < expect, "Some device were not traversed");
 	fail_on_true(count > expect, "More devices were traversed then expected");
+
+	test_end();
 }
 
 int main(void)
