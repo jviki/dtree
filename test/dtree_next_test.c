@@ -10,6 +10,8 @@ void test_first_dev(void)
 		dtree_addr_t base = dtree_dev_base(curr);
 
 		printf("DEV '%s' at 0x%08X\n", name, base);
+
+		dtree_dev_free(curr);
 	}
 
 	fail_on_true(dtree_iserror(), "An error occured during traversing the device tree");
