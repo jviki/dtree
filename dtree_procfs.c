@@ -161,8 +161,37 @@ int dtree_walk(const char *fpath, const struct stat *sb, int typeflag)
 // Initialization & destruction
 //
 
+#define DTREE_PROCFS_MAX_LEVEL 4
+
 int dtree_procfs_open(const char *rootd)
 {
+	if(rootd == NULL) {
+		dtree_errno_set(EINVAL);
+		return -1;
+	}
+
+	int err = ftw(rootd, &dtree_walk, DTREE_PROCFS_MAX_LEVEL);
+
+	if(err != 0) {
+		dtree_error_from_errno(); // XXX: does ftw use errno?
+		return err;
+	}
+
+	return 0;
+}
+
+void dtree_procfs_close(void)
+{
+	struct dtree_entry_t *curr = NULL;
+
+	while((curr = llist_remove()) != NULL) {
+		curr->dev.name = NULL;
+		curr->dev.base = 0;
+		curr->dev.compat = NULL;
+		free(curr);
+	}
+}
+
 
 //
 // Iteration over entries
