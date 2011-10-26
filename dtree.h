@@ -58,7 +58,7 @@ typedef uint32_t dtree_addr_t;
 struct dtree_dev_t {
 	const char  *name;
 	dtree_addr_t base;
-	const char  *compat[];
+	const char  **compat;
 };
 
 #define DTREE_GETTER static inline
