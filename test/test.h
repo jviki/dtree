@@ -1,6 +1,7 @@
 #ifndef DTREE_TEST
 #define DTREE_TEST
 
+#include "dtree.h"
 #include <stdio.h>
 
 void _test_start(const char *func, const char *file, int lineno)
@@ -14,10 +15,15 @@ void _test_end(const char *func)
 	fprintf(stderr, "SUCCESS: '%s'\n", func);
 }
 #define test_end() _test_end(__func__)
+
 void _test_fail(const char *func, const char *file, int lineno, const char *desc)
 {
 	fprintf(stderr, "Test %s (%s:%d) has FAILED\n", func, file, lineno);
-	fprintf(stderr, "%s\n", desc);
+
+	if(dtree_iserror())
+		fprintf(stderr, "ERROR: %s [%s]\n", desc, dtree_errstr());
+	else
+		fprintf(stderr, "ERROR: %s\n", desc);
 }
 #define test_fail(desc) _test_fail(__func__, __FILE__, __LINE__, (desc))
 
