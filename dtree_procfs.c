@@ -1,6 +1,7 @@
 #include "dtree_procfs.h"
 #include "dtree_error.h"
 #include <stdlib.h>
+#include <errno.h>
 #include <dirent.h>
 #include <assert.h>
 
@@ -12,6 +13,11 @@ static DIR *procfs = NULL;
 int dtree_procfs_open(const char *rootd)
 {
 	assert(procfs == NULL);
+
+	if(rootd == NULL) {
+		dtree_errno_set(EINVAL);
+		return -1;
+	}
 	
 	procfs = opendir(rootd);
 	if(procfs == NULL) {
