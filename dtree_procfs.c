@@ -31,6 +31,11 @@ struct dtree_entry_t {
  */
 static struct dtree_entry_t *top = NULL;
 
+/**
+ * Iterator over the linked-list.
+ */
+static struct dtree_entry_t *iter = NULL;
+
 static
 void llist_append(struct dtree_entry_t *e)
 {
@@ -186,6 +191,7 @@ int dtree_procfs_open(const char *rootd)
 		return err;
 	}
 
+	dtree_reset();
 	return 0;
 }
 
@@ -208,15 +214,20 @@ void dtree_procfs_close(void)
 
 struct dtree_dev_t *dtree_procfs_next(void)
 {
-	return NULL;
+	struct dtree_entry_t *entry = iter;
+	iter = llist_next(entry);
+
+	return &entry->dev;
 }
 
 void dtree_procfs_dev_free(struct dtree_dev_t *dev)
 {
+	// empty, nothing to free in this implementation
 }
 
 int dtree_procfs_reset(void)
 {
+	iter = llist_last();
 	return 0;
 }
 
