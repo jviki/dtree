@@ -25,6 +25,8 @@
  *
  * It is safe to call dtree_reset() after dtree_open()
  * but it has no effect.
+ * It is an error to call dtree_open() twice (without
+ * dtree_close() in between).
  *
  * Returns 0 on success. On error sets error state.
  */
