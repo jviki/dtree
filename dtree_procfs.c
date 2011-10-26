@@ -43,6 +43,9 @@ struct dtree_entry_t *llist_remove(void)
 	if(top != NULL)
 		top = top->next;
 
+	if(e != NULL)
+		e->next = NULL;
+
 	return e;
 }
 
