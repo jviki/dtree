@@ -5,9 +5,11 @@ Q ?= @
 
 all: dtree_open_test
 dtree_open_test: dtree_open_test.o libdtree.a
-libdtree.a:
+libdtree.a: force
 	$(Q) $(MAKE) -C .. $@
-	$(Q) ln ../$@ $@
+	$(Q) ln -f ../$@ $@
 
 clean:
 	$(Q) $(RM) *.o
+
+force:
