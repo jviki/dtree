@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <dirent.h>
+#include <string.h>
 #include <assert.h>
 
 /**
@@ -50,3 +51,13 @@ int dirent_is_dir(struct dirent *ent)
 	// when unsupported by filesystem, implement it here
 	return 0;
 }
+const char *copy_devname(void *name, char *d_name, size_t namel)
+{
+	memcpy(name, d_name, namel);
+
+	char *p = (char *) name;
+	p[namel] = '\0';
+
+	return (const char *) p;
+}
+
