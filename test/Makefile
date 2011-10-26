@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -std=c99 -Wall -pedantic -Wextra -I..
+CFLAGS = -std=c99 -Wall -pedantic -Wextra -I.. -g
 
 Q ?= @
 
