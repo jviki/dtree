@@ -13,3 +13,4 @@ clean:
 	$(Q) $(RM) *.o
 
 force:
+.PHONY: all clean force
