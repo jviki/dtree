@@ -1,9 +1,8 @@
 #include "dtree.h"
 #include "test.h"
 
-void test_first_dev(void)
+void test_first_dev(const int expect)
 {
-	const int expect = 3;
 	struct dtree_dev_t *curr = NULL;
 	int count = 0;
 
@@ -24,10 +23,11 @@ void test_first_dev(void)
 
 int main(void)
 {
+	const int expect = 7; // magic number, see device-tree/ in current dir, number of name@addr dirs
 	int err = dtree_open("device-tree");
 	halt_on_error(err, "Can not open testing device-tree");
 
-	test_first_dev();
+	test_first_dev(expect);
 
 	dtree_close();
 }
