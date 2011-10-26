@@ -98,7 +98,22 @@ int dtree_walk(const char *fpath, const struct stat *sb, int typeflag)
 
 int dtree_procfs_open(const char *rootd)
 {
+
+//
+// Iteration over entries
+//
+
+struct dtree_dev_t *dtree_procfs_next(void)
+{
+	return NULL;
 }
 
+void dtree_procfs_dev_free(struct dtree_dev_t *dev)
+{
+}
 
+int dtree_procfs_reset(void)
+{
+	return 0;
+}
 
