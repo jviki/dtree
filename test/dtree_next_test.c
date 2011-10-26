@@ -1,7 +1,7 @@
 #include "dtree.h"
 #include "test.h"
 
-void test_first_dev(const int expect)
+void test_all_dev(const int expect)
 {
 	struct dtree_dev_t *curr = NULL;
 	int count = 0;
@@ -27,7 +27,7 @@ int main(void)
 	int err = dtree_open("device-tree");
 	halt_on_error(err, "Can not open testing device-tree");
 
-	test_first_dev(expect);
+	test_all_dev(expect);
 
 	dtree_close();
 }
