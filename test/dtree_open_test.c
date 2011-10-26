@@ -71,8 +71,6 @@ void test_clear_error(void)
 	fail_on_true(dtree_iserror(), "The error was not cleared");
 
 	dtree_close();
-	fail_on_false(dtree_iserror(), "The error was cleared after close");
-
 	test_end();
 }
 
