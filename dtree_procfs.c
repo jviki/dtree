@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <dirent.h>
 #include <string.h>
+#include <ctype.h>
 #include <assert.h>
 
 /**
@@ -51,6 +52,33 @@ int dirent_is_dir(struct dirent *ent)
 	// when unsupported by filesystem, implement it here
 	return 0;
 }
+
+/**
+ * Finds the next device and sets sep to point to the '@'
+ * separator in the directory name (name@address).
+ */
+static
+struct dirent *find_device(char **sep)
+{
+	struct dirent *entry = NULL;
+
+	while((entry = readdir(procfs)) != NULL) {
+		char *at = strchr(entry->d_name, '@');	
+
+		if(!dirent_is_dir(entry))
+			continue;
+
+		// found and next character is a number (address)
+		// XXX: do some PATH_MAX checking?
+		if(at != NULL && isalnum(at[1])) {
+			*sep = at;
+			break;
+		}
+	}
+
+	return entry;
+}
+
 const char *copy_devname(void *name, char *d_name, size_t namel)
 {
 	memcpy(name, d_name, namel);
