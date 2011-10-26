@@ -18,13 +18,13 @@ static const char *errstr[] = {
 	"Successful"
 };
 
-void dtree_internal_clrerr(void)
+void dtree_error_clear(void)
 {
 	error  = 0;
 	xerrno = 0;
 }
 
-void dtree_internal_seterr(int e)
+void dtree_error_set(int e)
 {
 	error  = e;
 	xerrno = errno;

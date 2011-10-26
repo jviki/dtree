@@ -7,8 +7,8 @@
 #ifndef DTREE_ERROR
 #define DTREE_ERROR
 
-void dtree_internal_clrerr(void);
-void dtree_internal_seterr(int e);
+void dtree_error_clear(void);
+void dtree_error_set(int e);
 
 #endif
 
