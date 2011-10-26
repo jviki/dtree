@@ -55,7 +55,7 @@ struct dtree_entry_t *llist_next(struct dtree_entry_t *e)
 static
 struct dtree_entry_t *llist_last(void)
 {
-	return e;
+	return top;
 }
 
 //
