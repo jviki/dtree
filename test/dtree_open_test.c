@@ -64,15 +64,15 @@ void test_clear_error(void)
 	test_start();
 	int err = dtree_open(NULL);
 	fail_on_success(err, "Open of NULL was successful");
-
-	warn_on_false(dtree_iserror(), "No error is indicated");
-	dtree_close();
-
-	fail_on_false(dtree_iserror(), "The error was cleared after close");
+	fail_on_false(dtree_iserror(), "No error is indicated");
 
 	err = dtree_open("device-tree");
 	fail_on_error(err, "Can not open testing device-tree");
 	fail_on_true(dtree_iserror(), "The error was not cleared");
+
+	dtree_close();
+	fail_on_false(dtree_iserror(), "The error was cleared after close");
+
 	test_end();
 }
 
