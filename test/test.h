@@ -3,6 +3,17 @@
 
 #include <stdio.h>
 
+void _test_start(const char *func, const char *file, int lineno)
+{
+	fprintf(stderr, "Running '%s' (%s:%d)\n", func, file, lineno);
+}
+#define test_start() _test_start(__func__, __FILE__, __LINE__)
+
+void _test_end(const char *func)
+{
+	fprintf(stderr, "SUCCESS: '%s'\n", func);
+}
+#define test_end() _test_end(__func__)
 void _test_fail(const char *func, const char *file, int lineno, const char *desc)
 {
 	fprintf(stderr, "Test %s (%s:%d) has FAILED\n", func, file, lineno);
