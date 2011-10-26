@@ -21,5 +21,20 @@ int dtree_procfs_open(const char *rootd);
  */
 void dtree_procfs_close(void);
 
+/**
+ * Traversing over procfs.
+ */
+struct dtree_dev_t *dtree_procfs_next(void);
+
+/**
+ * Free of dtree_dev_t returned by procfs functions.
+ */
+void dtree_procfs_dev_free(struct dtree_dev_t *dev);
+
+/**
+ * Reset of iteration over procfs.
+ */
+int dtree_procfs_reset(void);
+
 #endif
 

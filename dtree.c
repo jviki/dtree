@@ -19,3 +19,18 @@ void dtree_close(void)
 	dtree_procfs_close();
 }
 
+struct dtree_dev_t *dtree_next(void)
+{
+	return dtree_procfs_next();
+}
+
+void dtree_dev_free(struct dtree_dev_t *dev)
+{
+	dtree_procfs_dev_free(dev);
+}
+
+int dtree_reset(void)
+{
+	return dtree_procfs_reset();
+}
+

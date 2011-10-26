@@ -121,7 +121,7 @@ struct dtree_dev_t *build_dev(struct dirent *devdir, const char *sep)
 	return dev;
 }
 
-struct dtree_dev_t *dtree_next(void)
+struct dtree_dev_t *dtree_procfs_next(void)
 {
 	struct dirent *devdir = NULL;
 	char *sep = NULL;
@@ -135,7 +135,7 @@ struct dtree_dev_t *dtree_next(void)
 	return build_dev(devdir, sep);
 }
 
-void dtree_dev_free(struct dtree_dev_t *dev)
+void dtree_procfs_dev_free(struct dtree_dev_t *dev)
 {
 	assert(dev != NULL);
 
@@ -146,7 +146,7 @@ void dtree_dev_free(struct dtree_dev_t *dev)
 	free(dev);
 }
 
-int dtree_reset(void)
+int dtree_procfs_reset(void)
 {
 	assert(procfs != NULL);
 	rewinddir(procfs);
