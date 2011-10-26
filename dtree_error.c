@@ -1,4 +1,6 @@
 #include "dtree.h"
+#include "dtree_error.h"
+
 #include <errno.h>
 #include <string.h>
 #include <assert.h>
@@ -16,7 +18,8 @@ static int xerrno = 0;
 
 #define ERRSTR_COUNT ((int) (sizeof(errstr)/sizeof(char *)))
 static const char *errstr[] = {
-	"Successful"
+	[0]                       = "Successful",
+	[DTREE_EINVALID_ROOT_DIR] = "Root dir is invalid"
 };
 
 void dtree_error_clear(void)
