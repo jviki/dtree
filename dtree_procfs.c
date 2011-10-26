@@ -1,3 +1,4 @@
+#define _BSD_SOURCE // enable dir type constants
 #include "dtree_procfs.h"
 #include "dtree_error.h"
 #include <stdlib.h>
@@ -37,3 +38,15 @@ void dtree_procfs_close(void)
 	procfs = NULL;
 }
 
+static
+int dirent_is_dir(struct dirent *ent)
+{
+	if(ent->d_type == DT_DIR)
+		return 1;
+
+	if(ent->d_type != DT_UNKNOWN) // see man readdir
+		return 0;
+
+	// when unsupported by filesystem, implement it here
+	return 0;
+}
