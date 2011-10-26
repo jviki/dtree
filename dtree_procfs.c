@@ -61,3 +61,10 @@ const char *copy_devname(void *name, char *d_name, size_t namel)
 	return (const char *) p;
 }
 
+dtree_addr_t parse_devaddr(const char *addr, size_t addrl)
+{
+	assert(addr[addrl] == '\0');
+	long val = strtol(addr, NULL, 16);
+	return (dtree_addr_t) val;
+}
+
