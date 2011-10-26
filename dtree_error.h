@@ -8,6 +8,13 @@
 #define DTREE_ERROR
 
 void dtree_error_clear(void);
+
+/**
+ * Sets error state. When negative it assumes that
+ * errno is set. When positive it assumes a valid
+ * internal error code.
+ * Passing zero is an error.
+ */
 void dtree_error_set(int e);
 
 #endif

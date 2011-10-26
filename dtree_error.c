@@ -1,6 +1,7 @@
 #include "dtree.h"
 #include <errno.h>
 #include <string.h>
+#include <assert.h>
 
 /**
  * Error state.
@@ -26,6 +27,8 @@ void dtree_error_clear(void)
 
 void dtree_error_set(int e)
 {
+	assert(e != 0);
+
 	error  = e;
 	xerrno = errno;
 }
