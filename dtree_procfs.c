@@ -119,3 +119,36 @@ struct dtree_dev_t *build_dev(struct dirent *devdir, const char *sep)
 	return dev;
 }
 
+struct dtree_dev_t *dtree_next(void)
+{
+	struct dirent *devdir = NULL;
+	char *sep = NULL;
+
+	devdir = find_device(&sep);
+	if(devdir == NULL) {
+		dtree_error_from_errno();
+		return NULL;
+	}
+
+	return build_dev(devdir, sep);
+}
+
+void dtree_dev_free(struct dtree_dev_t *dev)
+{
+	assert(dev != NULL);
+
+	dev->name = NULL;
+	dev->base = 0;
+	dev->compat = NULL;
+
+	free(dev);
+}
+
+int dtree_reset(void)
+{
+	assert(procfs != NULL);
+	rewinddir(procfs);
+	return 0;
+}
+
+
