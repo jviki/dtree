@@ -11,6 +11,9 @@
 #include <ftw.h>
 #include <dirent.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <limits.h>
 #include <ctype.h>
 #include <assert.h>
 
@@ -133,6 +136,79 @@ int dtree_walk_dir(const char *path)
 
 	llist_append(dev);
 	return 0;
+}
+
+/**
+ * Reads file on the given path to the given buffer of lenght len.
+ * Returns 0 when successful. On error sets dtree error state.
+ */
+static
+int read_file(const char *path, char *buff, const size_t len)
+{
+	int fd = open(path, O_RDONLY);
+	if(fd == -1) { // permissions!! or a race condition??
+		dtree_error_from_errno();
+		return -1;
+	}
+
+	assert(len <= SSIZE_MAX); // not supporting big files for now
+
+	ssize_t rlen = 0;
+	size_t total = 0;
+	int err = 0;
+
+	do {
+		rlen = read(fd, buff + total, len - total);
+		
+		if(rlen == -1) {// not handling EINTR
+			err = -1;
+			dtree_error_from_errno();
+			break;
+		}
+
+		total += (size_t) rlen;
+	} while(total < len);
+
+	close(fd);
+	return err;
+}
+
+/**
+ * Counts number of zero-terminated strings in the buffer.
+ * If the last string doesn't ends with zero, it is not counted.
+ */
+static
+size_t strings_count(char *buff, size_t len)
+{
+	char *p = NULL;
+	size_t entries = 0;
+
+	for(p = buff; (size_t) (p - buff) < len; ++p) {
+		if(*p == '\0')
+			entries += 1;
+	}
+	
+	return entries;
+}
+
+/**
+ * Assigns pointers of every single zero-terminated string
+ * into the sarray. The last item points to NULL.
+ * Assumes that the sarray has enought space.
+ */
+static
+void strings_parse(char *buff, size_t len, char **sarray)
+{
+	char *p = buff;
+	size_t i = 0;
+
+	sarray[0] = p;
+	for(i = 1; (size_t) (p - buff) < len; ++p) {
+		if(*p == '\0')
+			sarray[i] = p + 1;
+	}
+
+	sarray[i] = NULL;
 }
 
 static
