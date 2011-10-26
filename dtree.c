@@ -46,6 +46,8 @@ struct dtree_dev_t *dtree_byname(const char *name)
 	while((curr = dtree_next()) != NULL) {
 		if(!strcmp(name, curr->name))
 			break;
+
+		dtree_dev_free(curr);
 	}
 
 	return curr;
