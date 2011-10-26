@@ -159,6 +159,10 @@ void dtree_dev_free(struct dtree_dev_t *dev);
  * When it is in an error state the behaviour of all
  * operations except dtree_close() and dtree_errstr()
  * is undefined.
+ *
+ * Error handling has to be done before next possible
+ * failing call. That call would overwrite current
+ * error state.
  */
 int dtree_iserror(void);
 
