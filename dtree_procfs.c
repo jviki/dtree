@@ -4,8 +4,11 @@
 #include "dtree_procfs.h"
 #include "dtree_error.h"
 
+#include <libgen.h> // basename, dirname
 #include <stdlib.h>
 #include <errno.h>
+#include <sys/stat.h>
+#include <ftw.h>
 #include <dirent.h>
 #include <string.h>
 #include <ctype.h>
@@ -61,18 +64,82 @@ struct dtree_entry_t *llist_last(void)
 	return top;
 }
 
+
 //
 // Walking over the procfs
 //
 
 static
-int dtree_walk_file(struct dtree_entry_t *e, const char *path, const struct stat *s)
+const char *copy_devname(void *name, const char *d_name, size_t namel)
 {
+	memcpy(name, d_name, namel);
+
+	char *p = (char *) name;
+	p[namel] = '\0';
+
+	return (const char *) p;
 }
 
 static
-int dtree_walk_dir(const char *path, const struct stat *s)
+dtree_addr_t parse_devaddr(const char *addr)
 {
+	long val = strtol(addr, NULL, 16);
+	return (dtree_addr_t) val;
+}
+
+static
+struct dtree_entry_t *build_entry(const char *name, size_t namel, const char *base)
+{
+	static const char *NULL_ENTRY = NULL;
+	struct dtree_entry_t *entry = NULL;
+
+	void *m = malloc(sizeof(struct dtree_entry_t) + namel + 1);
+	if(m == NULL)
+		return NULL;
+
+	entry = (struct dtree_entry_t *) m;
+	entry->dev.name = copy_devname((void *) (entry + 1), name, namel);
+	entry->dev.base = parse_devaddr(base);
+	entry->dev.compat = &NULL_ENTRY;
+
+	return entry;
+}
+
+static
+int dtree_walk_dir(const char *path)
+{
+	const char *bname = basename((char *) path); // XXX: be careful of "/"
+	const char *at = strchr(bname, '@');
+
+	// not found or next character is not of address
+	if(at == NULL || !isalnum(at[1]))
+		return 0; // skip non device directory
+
+	size_t namel = at - bname;
+	const char  *name  = bname;
+	const char  *base  = at + 1;
+
+	struct dtree_entry_t *dev = build_entry(name, namel, base);
+	if(dev == NULL)
+		return 1;
+
+	llist_append(dev);
+	return 0;
+}
+
+static
+int dtree_walk_file(struct dtree_entry_t *e, const char *path, const struct stat *s)
+{
+	static const char *NULL_ENTRY = NULL;
+	const char *bname = basename((char *) path); // XXX: be careful of "/"
+
+	if(strcmp("compatible", bname))
+		return 0;
+
+	size_t fsize = s->st_size;
+	// read the file contents and process
+	e->dev.compat = &NULL_ENTRY;
+	return 0;
 }
 
 static
@@ -80,15 +147,13 @@ int dtree_walk(const char *fpath, const struct stat *sb, int typeflag)
 {
 	struct dtree_entry_t *last = llist_last();
 
-	if(last != NULL && typeflag == FTW_F) {
+	if(last != NULL && typeflag == FTW_F)
 		return dtree_walk_file(last, fpath, sb);
-	}
-	else if(typeflag == FTW_D) {
-		return dtree_walk_dir(path, sb);
-	}
+	
+	else if(typeflag == FTW_D)
+		return dtree_walk_dir(fpath);
 	
 	// ignoring the top level files
-
 	return 0;
 }
 
