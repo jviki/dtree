@@ -55,6 +55,9 @@ struct dtree_entry_t *llist_remove(void)
 static
 struct dtree_entry_t *llist_next(struct dtree_entry_t *e)
 {
+	if(e == NULL)
+		return NULL;
+
 	return e->next;
 }
 
