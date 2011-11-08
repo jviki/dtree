@@ -30,6 +30,11 @@ struct dtree_entry_t {
 };
 
 /**
+ * Pointer to NULL. Used for empty arrays (eg. compat).
+ */
+static const char *NULL_ENTRY = NULL;
+
+/**
  * Linked-list that holds all the devices.
  */
 static struct dtree_entry_t *top = NULL;
@@ -103,7 +108,6 @@ dtree_addr_t parse_devaddr(const char *addr)
 static
 struct dtree_entry_t *build_entry(const char *name, size_t namel, const char *base)
 {
-	static const char *NULL_ENTRY = NULL;
 	struct dtree_entry_t *entry = NULL;
 
 	void *m = malloc(sizeof(struct dtree_entry_t) + namel + 1);
@@ -293,7 +297,6 @@ int read_compat_file(struct dtree_entry_t *e, const char *path, size_t fsize)
 static
 int dtree_walk_file(struct dtree_entry_t *e, const char *path, const struct stat *s)
 {
-	static const char *NULL_ENTRY = NULL;
 	const char *bname = basename((char *) path); // XXX: be careful of "/"
 
 	if(strcmp("compatible", bname))
