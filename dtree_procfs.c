@@ -139,7 +139,7 @@ int dtree_walk_dir(const char *path)
 }
 
 /**
- * Reads file on the given path to the given buffer of lenght len.
+ * Reads file on the given path to the given buffer of length len.
  * Returns 0 when successful. On error sets dtree error state.
  */
 static
