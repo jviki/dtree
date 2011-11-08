@@ -80,6 +80,8 @@ struct dtree_entry_t *llist_last(void)
 // Walking over the procfs
 //
 
+#define SYSERR_OCCURED -2
+
 static
 const char *copy_devname(void *name, const char *d_name, size_t namel)
 {
@@ -211,6 +213,81 @@ void strings_parse(char *buff, size_t len, char **sarray)
 	sarray[i] = NULL;
 }
 
+/**
+ * Parses the buffer buff with compat file contents.
+ * Assigns the strings pointers to the given dtree entry last.
+ */
+static
+int parse_compat(struct dtree_entry_t *e, char *buff, size_t fsize)
+{
+	// Don't mind when str_count is 0 here.
+	// When trying to handle it, there must be
+	// one free(buff) in this function or
+	// some unreadable way to inform the caller
+	// to call free on better place.
+	size_t str_count = strings_count(buff, fsize);
+
+	// alloc pointers to strings and last item for NULL
+	void *m = malloc((1 + str_count) * sizeof(char *));
+	if(m == NULL) {
+		dtree_error_from_errno();
+		return SYSERR_OCCURED;
+	}
+
+	char **sarray = (char **) m;
+	strings_parse(buff, fsize, sarray);
+	assert(sarray[str_count] == NULL);
+
+	e->dev.compat = (const char **) sarray; // needs 2 free's! see read_compat_file()
+	return 0;
+}
+
+/**
+ * Reads the compat file to memory.
+ * Finds all strings in its contents and
+ * allocates pointers to point to each of them.
+ *
+ * Careful when deallocating. There two blocks
+ * to be free'd.
+ *
+ * compat: | s0 | s1 | s2 |
+ * sarray: | ^  | ^  | ^  | NULL |
+ *
+ * Deallocation sequence (pointer to compat is not held):
+ *  free(sarray[0]);
+ *  free(sarray);
+ */
+static
+int read_compat_file(struct dtree_entry_t *e, const char *path, size_t fsize)
+{
+	void *m = malloc(fsize + 1); // 1 byte for missing ZERO (if necessary)
+	if(m == NULL) {
+		dtree_error_from_errno();
+		return SYSERR_OCCURED;
+	}
+
+	char *buff = (char *) m;
+	int read_err = read_file(path, buff, fsize);
+	if(read_err != 0) {
+		free(m);
+		return read_err;
+	}
+
+	int compat_err = 0;
+	if(buff[fsize - 1] == '\0') {
+		compat_err = parse_compat(e, buff, fsize);
+	}
+	else {
+		buff[fsize] = '\0'; // use the reserved byte
+		compat_err = parse_compat(e, buff, fsize + 1);
+	}
+
+	if(compat_err != 0) // error is already handled in parse_compat()
+		free(m);
+
+	return compat_err;
+}
+
 static
 int dtree_walk_file(struct dtree_entry_t *e, const char *path, const struct stat *s)
 {
@@ -221,9 +298,10 @@ int dtree_walk_file(struct dtree_entry_t *e, const char *path, const struct stat
 		return 0;
 
 	size_t fsize = s->st_size;
-	// read the file contents and process
-	e->dev.compat = &NULL_ENTRY;
-	return 0;
+	if(fsize == 0)
+		return 0;
+
+	return read_compat_file(e, path, fsize);
 }
 
 static
