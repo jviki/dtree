@@ -52,5 +52,19 @@ void _test_warn(const char *func, const char *file, int lineno, const char *desc
 	if((t) != 0) {test_warn((msg));}
 #define warn_on_false(f, msg)     warn_on_true(!(f), (msg))
 
+static inline
+void print_compat(struct dtree_dev_t *dev)
+{
+	const char **compat = dtree_dev_compat(dev);
+
+	for(size_t i = 0; compat[i] != NULL; ++i) {
+		const char *sep = ", ";
+		if(compat[i + 1] == NULL)
+			sep = "\n";
+
+		printf("%s%s", compat[i], sep);
+	}
+}
+
 #endif
 
