@@ -364,6 +364,14 @@ void dtree_procfs_close(void)
 	while((curr = llist_remove()) != NULL) {
 		curr->dev.name = NULL;
 		curr->dev.base = 0;
+
+		if(curr->dev.compat != &NULL_ENTRY) {
+			const char **sarray = curr->dev.compat;
+			// see read_compat_file()
+			free((void *) sarray[0]);
+			free((void *) sarray);
+		}
+
 		curr->dev.compat = NULL;
 		free(curr);
 	}
