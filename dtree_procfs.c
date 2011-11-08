@@ -122,6 +122,16 @@ struct dtree_entry_t *build_entry(const char *name, size_t namel, const char *ba
 	return entry;
 }
 
+/**
+ * Visiting a directory when walking over the device-tree by ftw().
+ * If it recognizes that directory is a device it creates an device
+ * entry and appends it to the global linked-list.
+ *
+ * Returns 0 on success.
+ * When an underlying call to system function returns -1 and sets errno,
+ * the dtree_error_from_errno() is called and SYSERR_OCCURED is returned.
+ * When an other error occures, it simply returns its value.
+ */
 static
 int dtree_walk_dir(const char *path)
 {
@@ -294,6 +304,15 @@ int read_compat_file(struct dtree_entry_t *e, const char *path, size_t fsize)
 	return compat_err;
 }
 
+/**
+ * Visiting a file when walking over the device-tree by ftw().
+ * Recognizes files called 'compatible'.
+ * 
+ * Returns 0 on success.
+ * When an underlying call to system function returns -1 and sets errno,
+ * the dtree_error_from_errno() is called and SYSERR_OCCURED is returned.
+ * When an other error occures, it simply returns its value.
+ */
 static
 int dtree_walk_file(struct dtree_entry_t *e, const char *path, const struct stat *s)
 {
@@ -309,6 +328,15 @@ int dtree_walk_file(struct dtree_entry_t *e, const char *path, const struct stat
 	return read_compat_file(e, path, fsize);
 }
 
+/**
+ * Visitor pattern implementation function to be passed to ftw().
+ * Visits the files in device-tree and processes them.
+ *
+ * Returns 0 on success.
+ * Returns DTREE_EINVALID_ROOT_DIR when the root node is
+ * a file (and not a directory).
+ * For other errors see dtree_walk_file() and dtree_walk_dir().
+ */
 static
 int dtree_walk(const char *fpath, const struct stat *sb, int typeflag)
 {
