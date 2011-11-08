@@ -11,6 +11,7 @@ void test_list_all(void)
 		dtree_addr_t base = dtree_dev_base(dev);
 
 		printf("DEV '%s' at 0x%08X\n", name, base);
+		print_compat(dev);
 		dtree_dev_free(dev);
 	}
 

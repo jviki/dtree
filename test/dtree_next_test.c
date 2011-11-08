@@ -13,6 +13,7 @@ void test_all_dev(const int expect)
 		dtree_addr_t base = dtree_dev_base(curr);
 
 		printf("DEV '%s' at 0x%08X\n", name, base);
+		print_compat(dev);
 
 		dtree_dev_free(curr);
 		count += 1;
