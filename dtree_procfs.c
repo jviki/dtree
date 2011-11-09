@@ -134,8 +134,10 @@ uint32_t parse_hex(const char *s, size_t slen)
 static
 dtree_addr_t parse_devaddr(const char *addr)
 {
-	long val = strtol(addr, NULL, 16);
-	return (dtree_addr_t) val;
+	// caused problems
+	//long val = strtol(addr, NULL, 16);
+	//return (dtree_addr_t) val;
+	return (dtree_addr_t) parse_hex(addr, strlen(addr));
 }
 
 static
