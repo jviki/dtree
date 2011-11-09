@@ -59,7 +59,7 @@ const char *dtree_errstr(void)
 		return errstr[error];
 
 	if(error < 0)
-		return strerror(errno);
+		return strerror(xerrno);
 
 	return "Unknown error occured";
 }
