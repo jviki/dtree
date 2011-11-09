@@ -34,15 +34,15 @@ void verbosity_printf(int level, const char *fmt, ...)
 
 void *bus_devmem_access(uint32_t base, uint32_t mlen, int *fd)
 {
-	*fd = open("/dev/mem", O_RDWR | O_SYNC);
+	*fd = open("/dev/mem", O_RDWR);
 	if(*fd == -1) {
 		perror("open(/dev/mem)");
 		return NULL;
 	}
 
-	void *m = mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_PRIVATE, *fd, base);
+	void *m = mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, *fd, base);
 	if(m == NULL) {
-		perror("mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, base)");
+		perror("mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, fd, base)");
 		close(*fd);
 		return NULL;
 	}
