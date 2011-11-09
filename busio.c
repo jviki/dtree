@@ -175,7 +175,7 @@ int perform_read(const char *dev, uint32_t addr, int len)
 	for(int i = 0; i < len; ++i)
 		mask |= 0x000000FF << (i * 8);
 
-	printf("0x%X\n", value & mask);
+	printf("0x%08X\n", value & mask);
 	return 0;
 }
 
