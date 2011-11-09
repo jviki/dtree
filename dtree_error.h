@@ -8,6 +8,7 @@
 #define DTREE_ERROR
 
 #define DTREE_EINVALID_ROOT_DIR 1
+#define DTREE_ECANT_READ_ROOT   2
 
 /**
  * Clears current error state.

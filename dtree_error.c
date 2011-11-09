@@ -19,7 +19,8 @@ static int xerrno = 0;
 #define ERRSTR_COUNT ((int) (sizeof(errstr)/sizeof(char *)))
 static const char *errstr[] = {
 	[0]                       = "Successful",
-	[DTREE_EINVALID_ROOT_DIR] = "Root dir is invalid"
+	[DTREE_EINVALID_ROOT_DIR] = "Root dir is invalid",
+	[DTREE_ECANT_READ_ROOT]   = "Can not read the root dir"
 };
 
 void dtree_error_clear(void)
