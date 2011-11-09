@@ -348,7 +348,10 @@ int dtree_walk(const char *fpath, const struct stat *sb, int typeflag)
 	else if(typeflag == FTW_D)
 		return dtree_walk_dir(fpath);
 
-	else // root is a file!
+	else if(last == NULL && typeflag == FTW_DNR)
+		return DTREE_ECANT_READ_ROOT;
+
+	else if(/*last == NULL &&*/ typeflag == FTW_F)// root is a file!
 		return DTREE_EINVALID_ROOT_DIR;
 
 	return 0;
