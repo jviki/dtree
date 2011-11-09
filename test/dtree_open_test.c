@@ -19,12 +19,13 @@ void test_nonexistent_dir(void)
 	test_end();
 }
 
-void test_pass_invalid(void)
+void test_pass_file(void)
 {
 	test_start();
 	int err = dtree_open(__FILE__);
-	fail_on_success(err, "Successful when passing " __FILE__ " as root dir");
-	fail_on_false(dtree_iserror(), "Error is not indicated by dtree_iserror()");
+	fail_on_error(err, "Passing " __FILE__ " as root dir failed");
+	warn_on_true(dtree_iserror(), "Error is indicated by dtree_iserror(), but should not be");
+	dtree_close();
 	test_end();
 }
 
@@ -78,7 +79,7 @@ int main(void)
 {
 	test_pass_null();
 	test_nonexistent_dir();
-	test_pass_invalid();
+	test_pass_file();
 	test_open_test_dtree();
 	test_pass_mostly_valid();
 	test_clear_error();
