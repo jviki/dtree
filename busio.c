@@ -218,12 +218,12 @@ uint32_t parse_value(const char *s)
 	return parse_hex(s);
 }
 
-#define GETOPT_STR "hlr:w:t:a:d:1234v"
+#define GETOPT_STR "hlr:w:t:a:d:1234vV"
 #define DTREE_PATH "/proc/device-tree"
 
 int print_help(const char *prog)
 {
-	fprintf(stderr, "Usage: %s [ -h | -l | -r <dev> | -w <dev> ] [ -t <path> ] [ -a <addr> ] [ -d <data> ] [ -1 | -2 | -3 | -4 ]\n", prog);
+	fprintf(stderr, "Usage: %s [ -V | -h | -l | -r <dev> | -w <dev> ] [ -t <path> ] [ -a <addr> ] [ -d <data> ] [ -1 | -2 | -3 | -4 ]\n", prog);
 	fprintf(stderr, "Examples:\n");
 	fprintf(stderr, "* List all devices in default device-tree: %s\n", DTREE_PATH);
 	fprintf(stderr, "  $ %s -l\n", prog);
@@ -244,6 +244,12 @@ int print_opterr(int opt)
 {
 	fprintf(stderr, "Invalid option: %c\n", opt);
 	return 1;
+}
+
+int print_version(const char *prog)
+{
+	printf("%s (%s build on %s at %s)\n", prog, __FILE__, __DATE__, __TIME__);
+	return 0;
 }
 
 int main(int argc, char **argv)
@@ -275,6 +281,9 @@ int main(int argc, char **argv)
 		switch(opt) {
 		case 'h':
 			return print_help(argv[0]);
+		
+		case 'V':
+			return print_version(argv[0]);
 
 		case 'v':
 			verbosity += 1;
