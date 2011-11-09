@@ -375,7 +375,7 @@ int main(int argc, char **argv)
 		goto exit;
 	}
 	if(!value_valid) {
-		fprintf(stderr, "Value option (-v) is missing\n");
+		fprintf(stderr, "Data option (-d) is missing\n");
 		err = 1;
 		goto exit;
 	}
