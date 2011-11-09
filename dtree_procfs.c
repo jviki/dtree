@@ -105,7 +105,7 @@ uint8_t hex2num(char c, int *err)
 	if(isdigit(c))
 		return c - '0';
 	if(isalpha(c))
-		return tolower(c) - 'a';
+		return tolower(c) - 'a' + 10;
 
 	*err = 1;
 	return 0;
