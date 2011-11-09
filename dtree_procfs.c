@@ -211,22 +211,28 @@ size_t strings_count(char *buff, size_t len)
 
 /**
  * Assigns pointers of every single zero-terminated string
- * into the sarray. The last item points to NULL.
- * Assumes that the sarray has enought space.
+ * into the sarray. The last item (of index slen) points to NULL.
+ * Assumes that the sarray has enought space (slen + 1).
  */
 static
-void strings_parse(char *buff, size_t len, char **sarray)
+void strings_parse(char *buff, size_t len, char **sarray, size_t slen)
 {
-	char *p = buff;
-	size_t i = 0;
+	size_t i;
+	size_t p;
 
-	sarray[0] = p;
-	for(i = 1; (size_t) (p - buff) < len; ++p) {
-		if(*p == '\0')
-			sarray[i] = p + 1;
+	for(i = 0, p = 0; i < slen; ++i) {
+		assert(p < len);
+		sarray[i] = buff + p;
+
+		// find end of the string
+		for(; p < len && buff[p] != '\0'; ++p)
+			; // no stuff
+
+		p += 1; // point to next string
 	}
 
 	sarray[i] = NULL;
+	assert(i == slen);
 }
 
 /**
@@ -251,7 +257,7 @@ int parse_compat(struct dtree_entry_t *e, char *buff, size_t fsize)
 	}
 
 	char **sarray = (char **) m;
-	strings_parse(buff, fsize, sarray);
+	strings_parse(buff, fsize, sarray, str_count);
 	assert(sarray[str_count] == NULL);
 
 	e->dev.compat = (const char **) sarray; // needs 2 free's! see read_compat_file()
