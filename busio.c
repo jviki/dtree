@@ -72,7 +72,7 @@ void bus_write(uint32_t base, uint32_t off, uint32_t value, int len)
 {
 	void *m = bus_access(base, len);
 	if(m == NULL)
-		return 1;
+		return;
 
 	uint8_t *cm = (uint8_t *) m;
 	uint8_t *data = cm + off;
