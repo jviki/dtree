@@ -8,5 +8,8 @@ all: libdtree.a
 libdtree.a: dtree_error.o dtree_procfs.o dtree.o
 	$(Q) $(AR) rcs $@ $^
 
+busio: busio.o libdtree.a
+busio.o: busio.c
+
 clean:
 	$(Q) $(RM) *.o
