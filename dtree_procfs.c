@@ -111,8 +111,10 @@ struct dtree_entry_t *build_entry(const char *name, size_t namel, const char *ba
 	struct dtree_entry_t *entry = NULL;
 
 	void *m = malloc(sizeof(struct dtree_entry_t) + namel + 1);
-	if(m == NULL)
+	if(m == NULL) {
+		dtree_error_from_errno();
 		return NULL;
+	}
 
 	entry = (struct dtree_entry_t *) m;
 	entry->dev.name = copy_devname((void *) (entry + 1), name, namel);
@@ -147,10 +149,8 @@ int dtree_walk_dir(const char *path)
 	const char  *base  = at + 1;
 
 	struct dtree_entry_t *dev = build_entry(name, namel, base);
-	if(dev == NULL) {
-		dtree_error_from_errno();
+	if(dev == NULL)
 		return SYSERR_OCCURED;
-	}
 
 	llist_append(dev);
 	return 0;
