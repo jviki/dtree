@@ -181,7 +181,7 @@ int perform_read(const char *dev, uint32_t addr, int len)
 		return 1;
 	}
 
-	verbosity_printf(1, "Action: read, device: '%s', offset: '0x%X', len: '%d'", dev, addr, len);
+	verbosity_printf(1, "Action: read, device: '%s', offset: '0x%08X', len: '%d'", dev, addr, len);
 
 	uint32_t value = bus_read(dtree_dev_base(d), addr, len);
 	printf("0x%08X\n", value);
@@ -197,7 +197,7 @@ int perform_write(const char *dev, uint32_t addr, uint32_t len, uint32_t value)
 		return 1;
 	}
 	
-	verbosity_printf(1, "Action: write, device: '%s', offset: '0x%X', data: '0x%X', len: '%d'", dev, addr, value, len);
+	verbosity_printf(1, "Action: write, device: '%s', offset: '0x%08X', data: '0x%08X', len: '%d'", dev, addr, value, len);
 
 	bus_write(dtree_dev_base(d), addr, value, len);
 	return 0;
