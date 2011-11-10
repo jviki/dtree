@@ -3,6 +3,7 @@
 #include "dtree.h"
 #include "dtree_procfs.h"
 #include "dtree_error.h"
+#include "dtree_util.h"
 
 #include <libgen.h> // basename, dirname
 #include <stdlib.h>
@@ -96,39 +97,6 @@ const char *copy_devname(void *name, const char *d_name, size_t namel)
 	p[namel] = '\0';
 
 	return (const char *) p;
-}
-
-static
-uint8_t hex2num(char c, int *err)
-{
-	*err = 0;
-	if(isdigit(c))
-		return c - '0';
-	if(isalpha(c))
-		return tolower(c) - 'a' + 10;
-
-	*err = 1;
-	return 0;
-}
-
-static
-uint32_t parse_hex(const char *s, size_t slen)
-{
-	uint32_t val = 0;
-	uint32_t order = 1;
-	int error = 0;
-	int32_t i = (int32_t) slen - 1; // possible overflow, assuming only few (8) characters
-
-	for(; i >= 0; --i) {
-		uint32_t num = hex2num(s[i], &error);
-		if(error == 1)
-			break;
-
-		val += num * order;
-		order *= 16;
-	}
-
-	return val;
 }
 
 static
