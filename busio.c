@@ -74,59 +74,73 @@ void bus_write(uint32_t base, uint32_t off, uint32_t value, int len)
 	if(m == NULL)
 		return;
 
-	uint8_t *cm = (uint8_t *) m;
-	uint8_t *data = cm + off;
-	uint8_t prepare = value;
+	uint8_t *cdata = (uint8_t *) m;
+	uint8_t *wdata  = cdata + off;
 
 	switch(len) {
 	case 1:
-		prepare &= 0x000000FF;
-		verbosity_printf(2, "Writing 1 B '0x%X' to address '0x%X'", prepare, data);
-		data[0] = (uint8_t) ((prepare >>  0) & 0xFF);
+		verbosity_printf(2, "Writing at 0x%08X value 0x%02X (1)", base + off, value & 0x000000FF);
+		*(uint8_t *)  wdata = (uint8_t)  (value & 0x000000FF);
 		break;
+		
 	case 2:
-		prepare &= 0x0000FFFF;
-		verbosity_printf(2, "Writing 2 B '0x%X' to address '0x%X'", prepare, data);
-		data[0] = (uint8_t) ((prepare >>  0) & 0xFF);
-		data[1] = (uint8_t) ((prepare >>  8) & 0xFF);
+		verbosity_printf(2, "Writing at 0x%08X value 0x%04X (2)", base + off, value & 0x0000FFFF);
+		*(uint16_t *) wdata = (uint16_t) (value & 0x0000FFFF);
 		break;
-	case 3:
-		prepare &= 0x00FFFFFF;
-		verbosity_printf(2, "Writing 3 B '0x%X' to address '0x%X'", prepare, data);
-		data[0] = (uint8_t) ((prepare >>  0) & 0xFF);
-		data[1] = (uint8_t) ((prepare >>  8) & 0xFF);
-		data[2] = (uint8_t) ((prepare >> 16) & 0xFF);
-		break;
+
 	case 4:
-		prepare &= 0xFFFFFFFF;
-		verbosity_printf(2, "Writing 4 B '0x%X' to address '0x%X'", prepare, data);
-		data[0] = (uint8_t) ((prepare >>  0) & 0xFF);
-		data[1] = (uint8_t) ((prepare >>  8) & 0xFF);
-		data[2] = (uint8_t) ((prepare >> 16) & 0xFF);
-		data[3] = (uint8_t) ((prepare >> 24) & 0xFF);
+		verbosity_printf(2, "Writing at 0x%08X value 0x%08X (4)", base + off, value & 0xFFFFFFFF);
+		*(uint32_t *) wdata = (uint32_t) (value & 0xFFFFFFFF);
 		break;
+
 	default:
+		verbosity_printf(1, "BUG? Invalid data length passed to bus_write(): %d", len);
 		abort();
 	}
 
 	bus_forget(m);
 }
 
-uint32_t bus_read(uint32_t base, uint32_t off)
+uint32_t bus_read(uint32_t base, uint32_t off, int len)
 {
-	verbosity_printf(2, "Reading from address '0x%X'", base + off);
-
 	void *m = bus_access(base, 4);
 	if(m == NULL)
-		return 0xFFFFFFFF;
+		return 0xFFFFFFFE;
 
-	char *cdata = (char *) m;
-	uint32_t *mdata = (uint32_t *) (cdata + off);
-	uint32_t data = *mdata;
+	verbosity_printf(2, "Reading from address '0x%08X'", base + off);
 
-	verbosity_printf(2, "Read data '0x%X'", data);
+	uint8_t  *cdata = (uint8_t  *) m;
+	uint32_t *rdata = (uint32_t *) cdata + off;
+	uint32_t value  = *rdata;
+
+	verbosity_printf(2, "Raw value: 0x%08X", value);
+
+	if(value == 0xFFFFFFFE)
+		verbosity_printf(1, "WARN: Possible error when accessing the bus");
+
+	switch(len) {
+	case 1:
+		value &= 0x000000FF;
+		verbosity_printf(2, "Masking out %d bytes: 0x%08X", 4 - len, value);
+		break;
+
+	case 2:
+		value &= 0x0000FFFF;
+		verbosity_printf(2, "Masking out %d bytes: 0x%08X", 4 - len, value);
+		break;
+
+	case 4:
+		value &= 0xFFFFFFFF;
+		verbosity_printf(2, "Masking out %d bytes: 0x%08X", 4 - len, value);
+		break;
+
+	default:
+		verbosity_printf(1, "BUG? Invalid data length passed to bus_read(): %d", len);
+		abort();
+	}
+
 	bus_forget(m);
-	return data;
+	return value;
 }
 
 void bus_list(void)
@@ -169,13 +183,9 @@ int perform_read(const char *dev, uint32_t addr, int len)
 
 	verbosity_printf(1, "Action: read, device: '%s', offset: '0x%X', len: '%d'", dev, addr, len);
 
-	uint32_t value = bus_read(dtree_dev_base(d), addr);
-	uint32_t mask = 0;
+	uint32_t value = bus_read(dtree_dev_base(d), addr, len);
+	printf("0x%08X\n", value);
 
-	for(int i = 0; i < len; ++i)
-		mask |= 0x000000FF << (i * 8);
-
-	printf("0x%08X\n", value & mask);
 	return 0;
 }
 
@@ -219,12 +229,12 @@ uint32_t parse_value(const char *s)
 	return parse_hex(s);
 }
 
-#define GETOPT_STR "hlr:w:t:a:d:1234vV"
+#define GETOPT_STR "hlr:w:t:a:d:124vV"
 #define DTREE_PATH "/proc/device-tree"
 
 int print_help(const char *prog)
 {
-	fprintf(stderr, "Usage: %s [ -V | -h | -l | -r <dev> | -w <dev> ] [ -t <path> ] [ -a <addr> ] [ -d <data> ] [ -1 | -2 | -3 | -4 ]\n", prog);
+	fprintf(stderr, "Usage: %s [ -V | -h | -l | -r <dev> | -w <dev> ] [ -t <path> ] [ -a <addr> ] [ -d <data> ] [ -1 | -2 | -4 ]\n", prog);
 	fprintf(stderr, "Examples:\n");
 	fprintf(stderr, "* List all devices in default device-tree: %s\n", DTREE_PATH);
 	fprintf(stderr, "  $ %s -l\n", prog);
