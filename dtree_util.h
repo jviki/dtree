@@ -11,7 +11,7 @@ uint8_t hex2num(char c, int *err)
 	*err = 0;
 	if(isdigit(c))
 		return c - '0';
-	if(isalpha(c))
+	if(isalpha(c) && tolower(c) >= 'a' && tolower(c) <= 'f')
 		return tolower(c) - 'a' + 10;
 
 	*err = 1;
@@ -26,6 +26,11 @@ uint32_t parse_hex(const char *s, size_t slen)
 	int error = 0;
 	int32_t i = (int32_t) slen - 1; // possible overflow, assuming only few (8) characters
 
+	if(s[0] == '0' && tolower(s[1]) == 'x') {
+		s += 2;	
+		i -= 2;
+	}
+
 	for(; i >= 0; --i) {
 		uint32_t num = hex2num(s[i], &error);
 		if(error == 1)
@@ -34,6 +39,9 @@ uint32_t parse_hex(const char *s, size_t slen)
 		val += num * order;
 		order *= 16;
 	}
+
+	if(error)
+		return 0;
 
 	return val;
 }
