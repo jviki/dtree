@@ -111,7 +111,7 @@ uint32_t bus_read(uint32_t base, uint32_t off, int len)
 	verbosity_printf(2, "Reading from address '0x%08X'", base + off);
 
 	uint8_t  *cdata = (uint8_t  *) m;
-	uint32_t *rdata = (uint32_t *) cdata + off;
+	uint32_t *rdata = (uint32_t *) (cdata + off);
 	uint32_t value  = *rdata;
 
 	verbosity_printf(2, "Raw value: 0x%08X", value);
