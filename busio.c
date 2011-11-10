@@ -225,6 +225,9 @@ uint32_t parse_value(const char *s)
 int print_help(const char *prog)
 {
 	fprintf(stderr, "Usage: %s [ -V | -h | -l | -r <dev> | -w <dev> ] [ -t <path> ] [ -a <addr> ] [ -d <data> ] [ -1 | -2 | -4 ]\n", prog);
+	fprintf(stderr, "All numbers are treated as hexadecimals with two possible formats, eg.:\n");
+	fprintf(stderr, "* 0xDEEDBEAF\n");
+	fprintf(stderr, "* DEEDBEAF (=> '0x' is optional)\n");
 	fprintf(stderr, "Examples:\n");
 	fprintf(stderr, "* List all devices in default device-tree: %s\n", DTREE_PATH);
 	fprintf(stderr, "  $ %s -l\n", prog);
