@@ -4,12 +4,13 @@
  */
 
 #include "dtree.h"
+#include "dtree_util.h"
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include <stdint.h>
-#include <ctype.h>
+#include <string.h>
 #include <stdarg.h>
 #include <sys/mman.h>
 #include <fcntl.h>
@@ -208,25 +209,14 @@ int perform_write(const char *dev, uint32_t addr, uint32_t len, uint32_t value)
 // Main
 //
 
-uint32_t parse_hex(const char *s)
-{
-	const char *parse = s;
-
-	if(s[0] == '0' && tolower(s[1]) == 'x')
-		parse = s + 2;
-		
-	long val = strtol(s, NULL, 16);
-	return (uint32_t) val;
-}
-
 uint32_t parse_addr(const char *s)
 {
-	return parse_hex(s);
+	return parse_hex(s, strlen(s));
 }
 
 uint32_t parse_value(const char *s)
 {
-	return parse_hex(s);
+	return parse_hex(s, strlen(s));
 }
 
 #define GETOPT_STR "hlr:w:t:a:d:124vV"
