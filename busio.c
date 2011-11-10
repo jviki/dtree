@@ -177,7 +177,7 @@ int perform_read(const char *dev, uint32_t addr, int len)
 {
 	struct dtree_dev_t *d = dtree_byname(dev);
 	if(d == NULL) {
-		fprintf(stderr, "No device '%s' found", dev);
+		fprintf(stderr, "No device '%s' found\n", dev);
 		return 1;
 	}
 
@@ -193,7 +193,7 @@ int perform_write(const char *dev, uint32_t addr, uint32_t len, uint32_t value)
 {
 	struct dtree_dev_t *d = dtree_byname(dev);
 	if(d == NULL) {
-		fprintf(stderr, "No device '%s' found", dev);
+		fprintf(stderr, "No device '%s' found\n", dev);
 		return 1;
 	}
 	
