@@ -18,6 +18,11 @@
 #include <ctype.h>
 #include <assert.h>
 
+/**
+ * Pointer to NULL. Used for empty arrays (eg. compat).
+ */
+static const char *NULL_ENTRY = NULL;
+
 //
 // Linked-list implementation
 //
@@ -29,11 +34,6 @@ struct dtree_entry_t {
 	struct dtree_dev_t dev;
 	struct dtree_entry_t *next;
 };
-
-/**
- * Pointer to NULL. Used for empty arrays (eg. compat).
- */
-static const char *NULL_ENTRY = NULL;
 
 /**
  * Linked-list that holds all the devices.
