@@ -85,6 +85,56 @@ struct dtree_entry_t *llist_last(void)
 
 
 //
+// Stack to know the current device
+//
+
+#define MAX_DEVNAME_LENGTH 128
+#define MAX_DEVADDR_LENGTH  10
+// contains '@'
+#define MAX_DIRNAME_LENGTH (MAX_DEVNAME_LENGTH + MAX_DEVADDR_LENGTH + 1)
+
+struct ftw_stack_t {
+	char dirname[MAX_DIRNAME_LENGTH + 1];
+	struct dtree_dev_t *dev;
+};
+
+static struct ftw_stack_t ftw_stack[DTREE_PROCFS_MAX_LEVEL + 1];
+static int ftw_stack_top = -1;
+
+void ftw_push(const char *dirname, struct dtree_dev_t *dev)
+{
+	ftw_stack_top += 1;
+	assert(ftw_stack_top <= DTREE_PROCFS_MAX_LEVEL);
+
+	struct ftw_stack_t *e = &ftw_stack[ftw_stack_top];
+
+	strncpy(e->dirname, dirname, MAX_DIRNAME_LENGTH);
+	e->dirname[MAX_DIRNAME_LENGTH] = '\0';
+	e->dev = dev;
+}
+
+int ftw_empty(void)
+{
+	return ftw_stack_top < 0;
+}
+
+void ftw_top(const char **dirname, struct dtree_dev_t **dev)
+{
+	assert(ftw_stack_top >= 0);
+
+	struct ftw_stack_t *e = &ftw_stack[ftw_stack_top];
+	*dirname = e->dirname;
+	*dev = e->dev;
+}
+
+void ftw_pop(void)
+{
+	assert(ftw_stack_top >= 0);
+	ftw_stack_top -= 1;
+}
+
+
+//
 // Walking over the procfs
 //
 
@@ -130,6 +180,30 @@ struct dtree_entry_t *build_entry(const char *name, size_t namel, const char *ba
 }
 
 /**
+ * If the last device's directory has been left
+ * pop it from the ftw stack. If the ftw stack
+ * is empty, it does nothing.
+ * Returns non-zero when the pop has been done.
+ */
+static
+int ftw_pop_when_not_in_path(const char *path)
+{
+	if(ftw_empty())
+		return 0;
+
+	const char *lastdir = NULL;
+	struct dtree_dev_t *lastdev = NULL;
+
+	ftw_top(&lastdir, &lastdev);
+	if(strstr(path, lastdir) == NULL) { // lastdir has been left
+		ftw_pop();
+		return 1;
+	}
+
+	return 0;
+}
+
+/**
  * Visiting a directory when walking over the device-tree by ftw().
  * If it recognizes that directory is a device it creates an device
  * entry and appends it to the global linked-list.
@@ -153,11 +227,13 @@ int dtree_walk_dir(const char *path)
 	const char  *name  = bname;
 	const char  *base  = at + 1;
 
-	struct dtree_entry_t *dev = build_entry(name, namel, base);
-	if(dev == NULL)
+	struct dtree_entry_t *e = build_entry(name, namel, base);
+	if(e == NULL)
 		return SYSERR_OCCURED;
 
-	llist_append(dev);
+	ftw_pop_when_not_in_path(path);
+	ftw_push(bname, &e->dev);
+	llist_append(e);
 	return 0;
 }
 
@@ -321,7 +397,16 @@ int read_compat_file(struct dtree_dev_t *dev, const char *path, size_t fsize)
 static
 struct dtree_dev_t *get_current_dev(const char *path)
 {
-	return llist_last();
+	ftw_pop_when_not_in_path(path);
+
+	if(ftw_empty())
+		return NULL;
+
+	const char *lastdir = NULL;
+	struct dtree_dev_t *lastdev = NULL;
+
+	ftw_top(&lastdir, &lastdev);
+	return lastdev;
 }
 
 /**
@@ -336,8 +421,9 @@ struct dtree_dev_t *get_current_dev(const char *path)
 static
 int dtree_walk_file(const char *path, const struct stat *s)
 {
-	assert(!ftw_empty());
 	struct dtree_dev_t *dev = get_current_dev(path);
+	if(dev == NULL) // no device to use, do not care, just leave
+		return 0;
 
 	const char *bname = basename((char *) path); // XXX: be careful of "/"
 
@@ -364,13 +450,13 @@ int dtree_walk_file(const char *path, const struct stat *s)
 static
 int dtree_walk(const char *fpath, const struct stat *sb, int typeflag)
 {
-	if(typeflag == FTW_F)
+	if(!ftw_empty() && typeflag == FTW_F)
 		return dtree_walk_file(fpath, sb);
 	
 	else if(typeflag == FTW_D)
 		return dtree_walk_dir(fpath);
 
-	else if(typeflag == FTW_DNR)
+	else if(ftw_empty() && typeflag == FTW_DNR)
 		return DTREE_ECANT_READ_ROOT;
 
 	// bad assumption, in root dir there can be a lot of files:
