@@ -18,6 +18,8 @@
 #include <ctype.h>
 #include <assert.h>
 
+#define DTREE_PROCFS_MAX_LEVEL 4
+
 /**
  * Pointer to NULL. Used for empty arrays (eg. compat).
  */
@@ -372,7 +374,6 @@ int dtree_walk(const char *fpath, const struct stat *sb, int typeflag)
 // Initialization & destruction
 //
 
-#define DTREE_PROCFS_MAX_LEVEL 4
 
 int dtree_procfs_open(const char *rootd)
 {
