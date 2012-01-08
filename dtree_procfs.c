@@ -316,6 +316,15 @@ int read_compat_file(struct dtree_dev_t *dev, const char *path, size_t fsize)
 }
 
 /**
+ * Determines device for the current path.
+ */
+static
+struct dtree_dev_t *get_current_dev(const char *path)
+{
+	return llist_last();
+}
+
+/**
  * Visiting a file when walking over the device-tree by ftw().
  * Recognizes files called 'compatible'.
  * 
@@ -325,8 +334,10 @@ int read_compat_file(struct dtree_dev_t *dev, const char *path, size_t fsize)
  * When an other error occures, it simply returns its value.
  */
 static
-int dtree_walk_file(struct dtree_entry_t *e, const char *path, const struct stat *s)
+int dtree_walk_file(const char *path, const struct stat *s)
 {
+	assert(!ftw_empty());
+	struct dtree_dev_t *dev = get_current_dev(path);
 
 	const char *bname = basename((char *) path); // XXX: be careful of "/"
 
@@ -337,8 +348,8 @@ int dtree_walk_file(struct dtree_entry_t *e, const char *path, const struct stat
 	if(fsize == 0)
 		return 0;
 
-	assert(e->dev.compat == &NULL_ENTRY);
-	return read_compat_file(e, path, fsize);
+	assert(dev->compat == &NULL_ENTRY);
+	return read_compat_file(dev, path, fsize);
 }
 
 /**
@@ -353,15 +364,13 @@ int dtree_walk_file(struct dtree_entry_t *e, const char *path, const struct stat
 static
 int dtree_walk(const char *fpath, const struct stat *sb, int typeflag)
 {
-	struct dtree_entry_t *last = llist_last();
-
-	if(last != NULL && typeflag == FTW_F)
-		return dtree_walk_file(last, fpath, sb);
+	if(typeflag == FTW_F)
+		return dtree_walk_file(fpath, sb);
 	
 	else if(typeflag == FTW_D)
 		return dtree_walk_dir(fpath);
 
-	else if(last == NULL && typeflag == FTW_DNR)
+	else if(typeflag == FTW_DNR)
 		return DTREE_ECANT_READ_ROOT;
 
 	// bad assumption, in root dir there can be a lot of files:
