@@ -334,6 +334,7 @@ int dtree_walk_file(struct dtree_entry_t *e, const char *path, const struct stat
 	if(fsize == 0)
 		return 0;
 
+	assert(e->dev.compat == &NULL_ENTRY);
 	return read_compat_file(e, path, fsize);
 }
 
