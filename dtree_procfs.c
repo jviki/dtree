@@ -245,7 +245,7 @@ void strings_parse(char *buff, size_t len, char **sarray, size_t slen)
  * Assigns the strings pointers to the given dtree entry last.
  */
 static
-int parse_compat(struct dtree_entry_t *e, char *buff, size_t fsize)
+int parse_compat(struct dtree_dev_t *dev, char *buff, size_t fsize)
 {
 	// Don't mind when str_count is 0 here.
 	// When trying to handle it, there must be
@@ -265,7 +265,7 @@ int parse_compat(struct dtree_entry_t *e, char *buff, size_t fsize)
 	strings_parse(buff, fsize, sarray, str_count);
 	assert(sarray[str_count] == NULL);
 
-	e->dev.compat = (const char **) sarray; // needs 2 free's! see read_compat_file()
+	dev->compat = (const char **) sarray; // needs 2 free's! see read_compat_file()
 	return 0;
 }
 
@@ -285,7 +285,7 @@ int parse_compat(struct dtree_entry_t *e, char *buff, size_t fsize)
  *  free(sarray);
  */
 static
-int read_compat_file(struct dtree_entry_t *e, const char *path, size_t fsize)
+int read_compat_file(struct dtree_dev_t *dev, const char *path, size_t fsize)
 {
 	void *m = malloc(fsize + 1); // 1 byte for missing ZERO (if necessary)
 	if(m == NULL) {
@@ -302,11 +302,11 @@ int read_compat_file(struct dtree_entry_t *e, const char *path, size_t fsize)
 
 	int compat_err = 0;
 	if(buff[fsize - 1] == '\0') {
-		compat_err = parse_compat(e, buff, fsize);
+		compat_err = parse_compat(dev, buff, fsize);
 	}
 	else {
 		buff[fsize] = '\0'; // use the reserved byte
-		compat_err = parse_compat(e, buff, fsize + 1);
+		compat_err = parse_compat(dev, buff, fsize + 1);
 	}
 
 	if(compat_err != 0) // error is already handled in parse_compat()
@@ -327,6 +327,7 @@ int read_compat_file(struct dtree_entry_t *e, const char *path, size_t fsize)
 static
 int dtree_walk_file(struct dtree_entry_t *e, const char *path, const struct stat *s)
 {
+
 	const char *bname = basename((char *) path); // XXX: be careful of "/"
 
 	if(strcmp("compatible", bname))
