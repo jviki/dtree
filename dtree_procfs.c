@@ -495,10 +495,16 @@ int dtree_walk(const char *fpath, const struct stat *sb, int typeflag)
 	return 0;
 }
 
+
+//
+// ID Assignment
+//
+
+
+
 //
 // Initialization & destruction
 //
-
 
 int dtree_procfs_open(const char *rootd)
 {
