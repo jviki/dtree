@@ -139,14 +139,20 @@ void ftw_pop(void)
 //
 
 #define SYSERR_OCCURED -2
+#define DEV_NAME_ID_LEN 2
 
 static
-const char *copy_devname(void *name, const char *d_name, size_t namel)
+const char *copy_devname(char *name, const char *d_name, size_t namel, size_t cap)
 {
+	assert(namel + DEV_NAME_ID_LEN == cap);
+
 	memcpy(name, d_name, namel);
+	memset(name + namel, 0, DEV_NAME_ID_LEN + 1); // fill the end with zeros
 
 	char *p = (char *) name;
-	p[namel] = '\0';
+
+	assert(p[namel] == '\0');
+	assert(p[cap] == '\0');
 
 	return (const char *) p;
 }
@@ -160,19 +166,28 @@ dtree_addr_t parse_devaddr(const char *addr)
 	return (dtree_addr_t) parse_hex(addr, strlen(addr));
 }
 
+/**
+ * Allocates memory for the entry and initializes it.
+ * It allocates `DEV_NAME_ID_LEN` bytes more for the
+ * name that are used later to append an unique identifier
+ * to them.
+ */
 static
 struct dtree_entry_t *build_entry(const char *name, size_t namel, const char *base)
 {
 	struct dtree_entry_t *entry = NULL;
+	const size_t namecap = namel + DEV_NAME_ID_LEN + 1;
+	const size_t mlen = sizeof(struct dtree_entry_t)
+	                  + namecap;
 
-	void *m = malloc(sizeof(struct dtree_entry_t) + namel + 1);
+	void *m = malloc(mlen);
 	if(m == NULL) {
 		dtree_error_from_errno();
 		return NULL;
 	}
 
 	entry = (struct dtree_entry_t *) m;
-	entry->dev.name = copy_devname((void *) (entry + 1), name, namel);
+	entry->dev.name = copy_devname((char *) (entry + 1), name, namel, namecap);
 	entry->dev.base = parse_devaddr(base);
 	entry->dev.compat = &NULL_ENTRY;
 
