@@ -4,6 +4,7 @@
 #include "dtree_procfs.h"
 #include "dtree_error.h"
 #include "dtree_util.h"
+#include "bcd_arith.h"
 
 #include <libgen.h> // basename, dirname
 #include <stdlib.h>
