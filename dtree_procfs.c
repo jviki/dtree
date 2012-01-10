@@ -153,7 +153,7 @@ void ftw_pop(void)
 //
 
 #define SYSERR_OCCURED -2
-#define DEV_NAME_ID_LEN 2
+#define DEV_NAME_ID_LEN 3
 
 static
 const char *copy_devname(char *name, const char *d_name, size_t namel, size_t cap)
