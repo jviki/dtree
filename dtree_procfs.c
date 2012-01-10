@@ -620,22 +620,27 @@ void assign_id_to_entries(struct dtree_entry_t **e, size_t len)
 	bcd_init(id);
 
 	const char *lastname = dtree_dev_name(&e[0]->dev);
+
 	for(size_t i = 1; i < len; ++i) {
 		const char *name = dtree_dev_name(&e[i]->dev);
 
-		if(strcmp(lastname, name)) {
-			if(!bcd_iszero(id)) // mark the last entry
+		if(!strcmp(lastname, name)) {
+			inject_id(e[i - 1], id);
+			int overflow = bcd_inc(id);
+			assert(!overflow);
+		}
+		else {
+			if(!bcd_iszero(id)) // mark the last entry of sequence
 				inject_id(e[i - 1], id);
 
 			bcd_init(id);
-			continue;
 		}
 
-		inject_id(e[i - 1], id);
-		int overflow = bcd_inc(id);
-
-		assert(!overflow); // should never happen
+		lastname = name;
 	}
+
+	if(!bcd_iszero(id)) // mark the last entry
+		inject_id(e[len - 1], id);
 }
 
 /**
