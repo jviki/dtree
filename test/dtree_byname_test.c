@@ -23,8 +23,8 @@ void test_find_existent(void)
 	test_start();
 	
 	struct dtree_dev_t *dev = NULL;
-	dev = dtree_byname("serial");
-	fail_on_true(dev == NULL, "Could not find the device 'serial'");
+	dev = dtree_byname("ethernet");
+	fail_on_true(dev == NULL, "Could not find the device 'ethernet'");
 
 	const char  *name = dtree_dev_name(dev);
 	dtree_addr_t base = dtree_dev_base(dev);
