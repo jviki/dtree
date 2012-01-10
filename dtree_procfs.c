@@ -222,20 +222,22 @@ struct dtree_entry_t *build_entry(const char *name, size_t namel, const char *ba
  * pop it from the ftw stack. If the ftw stack
  * is empty, it does nothing.
  * Returns non-zero when the pop has been done.
+ *
+ * Pops all devices that are not in the path.
  */
 static
 int ftw_pop_when_not_in_path(const char *path)
 {
-	if(ftw_empty())
-		return 0;
-
 	const char *lastdir = NULL;
 	struct dtree_dev_t *lastdev = NULL;
 
-	ftw_top(&lastdir, &lastdev);
-	if(strstr(path, lastdir) == NULL) { // lastdir has been left
-		ftw_pop();
-		return 1;
+	while(!ftw_empty()) {
+		ftw_top(&lastdir, &lastdev);
+
+		if(strstr(path, lastdir) == NULL) // lastdir has been left
+			ftw_pop();
+		else
+			return 1;
 	}
 
 	return 0;
