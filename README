@@ -1,0 +1,98 @@
+Library dtree
+=============
+
+The library can be used to read information about devices that is
+located in _device tree_ structure. In Linux this is usually placed
+at `/proc/device-tree`. Device tree is available in embedded devices.
+
+
+Tutorial
+--------
+
+The public API of the library is located in `dtree.h`. It contains a lot of
+documentation that should be up to date. The API consists of several functions
+to access the tree. Currently there is only one implementation of that API:
+`dtree_procfs.c` that is used to parse the directory structure of `/proc/device-tree`.
+
+The core of the library is structure `dtree_dev_t`. It contains the information
+about the device. Currently it offers these properties:
+
+* `name` - name of the device
+* `base` - base address of the device
+* `compat` - array of compatible device types (finished with NULL)
+
+The library is not reentrant and thus not thread safe. If it is successfully
+initialized by call dtree_open() it has to be closed by dtree_close() before
+program exit to free resources (even on die call...).
+
+
+### Look up a device
+
+	int err = dtree_open("/proc/device-tree");
+	die_on_error(err);
+
+	struct dtree_dev_t *eth = dtree_byname("ethernet");
+	if(eth == 0)
+		die_no_ethernet();
+
+	process_eth(eth);
+	dtree_dev_free(eth);
+
+	dtree_close();
+
+Note call to `dtree_dev_free()` after the device information
+is not used anymore.
+
+
+### List available devices
+
+	int err = dtree_open("/proc/device-tree");
+	die_on_error(err);
+
+	struct dtree_dev_t *dev = NULL;
+	while((dev = dtree_next()) != NULL) {
+		process_dev(dev);
+		dtree_dev_free(dev);
+	}
+
+	dtree_close();
+
+### Search again with reset
+
+	// declarations, open dtree...
+	
+	eth = dtree_byname("ethernet");
+	dtree_reset();
+	serial = dtree_byname("serial");
+
+	process(eth, serial);
+	dtree_dev_free(eth);
+	dtree_dev_free(serial);
+
+	// go on and finally close dtree...
+
+
+### Error handling
+
+	// declarations...
+
+	if(dtree_open(DT_PATH) != 0) {
+		die(dtree_errstr());
+	}
+
+	eth = dtree_byname("ethernet");
+	if(eth == NULL) {
+		if(dtree_iserror())
+			die(dtree_errstr());
+		else
+			die("Ethernet device is not present in the system");
+	}
+
+	dtree_close();
+
+
+Testing
+-------
+
+Testing of the library is done in `test/` directory. There are few simple tests based
+on fake `device-tree` directory structure.
