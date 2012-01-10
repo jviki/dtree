@@ -56,7 +56,7 @@ static
 void llist_append(struct dtree_entry_t *e)
 {
 	e->next = top;
-	top = e;	
+	top = e;
 	entries_count += 1;
 }
 
