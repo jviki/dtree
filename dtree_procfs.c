@@ -538,6 +538,13 @@ int cmp_entries(const void *va, const void *vb)
 	return 0;
 }
 
+static
+void sort_entries(struct dtree_entry_t **e, size_t len)
+{
+	const size_t one_size = sizeof(struct dtree_entry_t *);
+	qsort(e, len, one_size, cmp_entries);
+}
+
 
 //
 // Initialization & destruction
