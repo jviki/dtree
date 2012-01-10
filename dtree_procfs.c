@@ -549,8 +549,8 @@ void fill_array_with_entries(struct dtree_entry_t **e, size_t len)
 static
 int cmp_entries(const void *va, const void *vb)
 {
-	const struct dtree_entry_t *a = (const struct dtree_entry_t *) va;
-	const struct dtree_entry_t *b = (const struct dtree_entry_t *) vb;
+	const struct dtree_entry_t *a = *(const struct dtree_entry_t **) va;
+	const struct dtree_entry_t *b = *(const struct dtree_entry_t **) vb;
 
 	const char *aname = dtree_dev_name(&a->dev);
 	const char *bname = dtree_dev_name(&b->dev);
