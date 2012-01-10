@@ -28,7 +28,7 @@ void test_all_dev(const int expect)
 
 int main(void)
 {
-	const int expect = 7; // magic number, see device-tree/ in current dir, number of name@addr dirs
+	const int expect = 8; // magic number, see device-tree/ in current dir, number of name@addr dirs
 	int err = dtree_open("device-tree");
 	halt_on_error(err, "Can not open testing device-tree");
 
