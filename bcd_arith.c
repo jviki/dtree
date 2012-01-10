@@ -39,7 +39,7 @@ int bcd_inc(bcd_t n)
 
 int bcd_iszero(bcd_t n)
 {
-	return memcmp(n, BCD_ZERO, strlen(BCD_ZERO));
+	return !memcmp(n, BCD_ZERO, strlen(BCD_ZERO));
 }
 
 const char *bcd_tostr(bcd_t n)
