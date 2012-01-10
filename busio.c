@@ -159,6 +159,7 @@ void bus_list(void)
 			printf("%s%s", compat[i], compat[i + 1] == NULL? "]" : ", ");
 
 		printf("\n");
+		dtree_dev_free(dev);
 	}
 }
 
