@@ -563,9 +563,9 @@ int cmp_entries(const void *va, const void *vb)
 	const dtree_addr_t bbase = dtree_dev_base(&b->dev);
 
 	if(abase > bbase)
-		return 1;
-	if(abase < bbase)
 		return -1;
+	if(abase < bbase)
+		return 1;
 
 	return 0;
 }
