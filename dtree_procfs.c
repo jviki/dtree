@@ -54,6 +54,22 @@ static struct dtree_entry_t *iter = NULL;
 static size_t entries_count = 0;
 
 static
+void llist_init(void)
+{
+	// otherwise this is a bug in user program
+	// (missing close) or in free of the linked-list
+	assert(iter == NULL);
+
+	entries_count = 0;
+}
+
+static
+void llist_fini(void)
+{
+	iter = NULL;
+}
+
+static
 void llist_append(struct dtree_entry_t *e)
 {
 	e->next = top;
@@ -115,6 +131,11 @@ struct ftw_stack_t {
 
 static struct ftw_stack_t ftw_stack[DTREE_PROCFS_MAX_LEVEL + 1];
 static int ftw_stack_top = -1;
+
+void ftw_init(void)
+{
+	ftw_stack_top = -1;
+}
 
 void ftw_push(const char *dirname, struct dtree_dev_t *dev)
 {
@@ -644,6 +665,9 @@ int dtree_procfs_open(const char *rootd)
 		return -1;
 	}
 
+	llist_init();
+	ftw_init();
+
 	int err = ftw(rootd, &dtree_walk, DTREE_PROCFS_MAX_LEVEL);
 
 	if(err == -1) {
@@ -681,6 +705,8 @@ void dtree_procfs_close(void)
 		curr->dev.compat = NULL;
 		free(curr);
 	}
+
+	llist_fini();
 }
 
 
