@@ -569,6 +569,44 @@ void inject_id(struct dtree_entry_t *e, bcd_t id)
 	idpos[idlen] = '\0'; // assure zero at the end
 }
 
+/**
+ * Assigns IDs to each entry in the array.
+ *
+ * The algorithm compares (i - 1)'th and i'th entry.
+ * If they match the previous one - (i - 1)'th - is
+ * marked with id.
+ * If they do not match and the previous pair has matched
+ * the (i - 1)'th is the last of the sequence so it has
+ * to be marked with id as well.
+ */
+static
+void assign_id_to_entries(struct dtree_entry_t **e, size_t len)
+{
+	if(len <= 1)
+		return;
+
+	bcd_t id;
+	bcd_init(id);
+
+	const char *lastname = dtree_dev_name(&e[0]->dev);
+	for(size_t i = 1; i < len; ++i) {
+		const char *name = dtree_dev_name(&e[i]->dev);
+
+		if(strcmp(lastname, name)) {
+			if(!bcd_iszero(id)) // mark the last entry
+				inject_id(e[i - 1], id);
+
+			bcd_init(id);
+			continue;
+		}
+
+		inject_id(e[i - 1], id);
+		int overflow = bcd_inc(id);
+
+		assert(!overflow); // should never happen
+	}
+}
+
 
 //
 // Initialization & destruction
