@@ -54,6 +54,22 @@ static struct dtree_entry_t *iter = NULL;
 static size_t entries_count = 0;
 
 static
+void llist_init(void)
+{
+	// otherwise this is a bug in user program
+	// (missing close) or in free of the linked-list
+	assert(iter == NULL);
+
+	entries_count = 0;
+}
+
+static
+void llist_fini(void)
+{
+	iter = NULL;
+}
+
+static
 void llist_append(struct dtree_entry_t *e)
 {
 	e->next = top;
