@@ -47,11 +47,17 @@ static struct dtree_entry_t *top = NULL;
  */
 static struct dtree_entry_t *iter = NULL;
 
+/**
+ * Total count of available entries.
+ */
+static size_t entries_count = 0;
+
 static
 void llist_append(struct dtree_entry_t *e)
 {
 	e->next = top;
 	top = e;	
+	entries_count += 1;
 }
 
 static
@@ -62,8 +68,10 @@ struct dtree_entry_t *llist_remove(void)
 	if(top != NULL)
 		top = top->next;
 
-	if(e != NULL)
+	if(e != NULL) {
 		e->next = NULL;
+		entries_count += 1;
+	}
 
 	return e;
 }
@@ -81,6 +89,12 @@ static
 struct dtree_entry_t *llist_last(void)
 {
 	return top;
+}
+
+static
+size_t llist_length(void)
+{
+	return entries_count;
 }
 
 
