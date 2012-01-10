@@ -91,3 +91,8 @@ is not used anymore.
 	dtree_close();
 
 
+Testing
+-------
+
+Testing of the library is done in `test/` directory. There are few simple tests based
+on fake `device-tree` directory structure.
