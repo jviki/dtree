@@ -574,7 +574,7 @@ void inject_id(struct dtree_entry_t *e, bcd_t id)
 
 	*idpos = '-';
 	memcpy((void *) (idpos + 1), idstr, idlen);
-	idpos[idlen] = '\0'; // assure zero at the end
+	idpos[idlen + 1] = '\0'; // assure zero at the end
 }
 
 /**
