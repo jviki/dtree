@@ -648,6 +648,7 @@ int dtree_procfs_open(const char *rootd)
 		return -1;
 	}
 
+	assign_entry_ids();
 	dtree_reset();
 	return 0;
 }
