@@ -546,6 +546,29 @@ void sort_entries(struct dtree_entry_t **e, size_t len)
 	qsort(e, len, one_size, cmp_entries);
 }
 
+static
+void inject_id(struct dtree_entry_t *e, bcd_t id)
+{
+	struct dtree_dev_t *dev = &e->dev;
+
+	// make the device name mutable
+	char *dname = (char *) dev->name;
+	size_t len  = strlen(dname);
+
+	// where to place the id
+	char *idpos = dname + len;
+
+	const char *idstr = bcd_tostr(id);
+	size_t idlen = strlen(idstr);
+
+	// idstr does not contain separator, thus only '<'
+	assert(idlen < DEV_NAME_ID_LEN);
+
+	*idpos = '-';
+	memcpy((void *) (idpos + 1), idstr, idlen);
+	idpos[idlen] = '\0'; // assure zero at the end
+}
+
 
 //
 // Initialization & destruction
