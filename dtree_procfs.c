@@ -500,6 +500,19 @@ int dtree_walk(const char *fpath, const struct stat *sb, int typeflag)
 // ID Assignment
 //
 
+static
+void fill_array_with_entries(struct dtree_entry_t **e, size_t len)
+{
+	struct dtree_entry_t *curr = llist_last();
+	size_t i = 0;
+
+	for(i = 0; curr != NULL; ++i) {
+		e[i] = curr;
+		curr = llist_next(curr);
+	}
+
+	assert(len == i); // otherwise this is a BUG
+}
 
 
 //
