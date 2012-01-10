@@ -156,20 +156,28 @@ void ftw_pop(void)
 #define SYSERR_OCCURED -2
 #define DEV_NAME_ID_LEN 3
 
+/**
+ * Result (for K == DEV_NAME_ID_LEN == 3):
+ *   +-------------------------------+
+ *   | N | A | M | E | 0 | 0 | 0 | 0 |
+ *   |%%%%%%%%%%%%%%%|###########|ZZZ|
+ *   |      namel    |     K     |   |
+ *   +-------------------------------+
+ *
+ *   For this case: cap == 8
+ */
 static
 const char *copy_devname(char *name, const char *d_name, size_t namel, size_t cap)
 {
-	assert(namel + DEV_NAME_ID_LEN == cap);
+	assert(1 + namel + DEV_NAME_ID_LEN == cap);
 
 	memcpy(name, d_name, namel);
 	memset(name + namel, 0, DEV_NAME_ID_LEN + 1); // fill the end with zeros
 
-	char *p = (char *) name;
+	assert(name[namel] == '\0');
+	assert(name[cap - 1] == '\0');
 
-	assert(p[namel] == '\0');
-	assert(p[cap] == '\0');
-
-	return (const char *) p;
+	return (const char *) name;
 }
 
 static
