@@ -132,6 +132,11 @@ struct ftw_stack_t {
 static struct ftw_stack_t ftw_stack[DTREE_PROCFS_MAX_LEVEL + 1];
 static int ftw_stack_top = -1;
 
+void ftw_init(void)
+{
+	ftw_stack_top = -1;
+}
+
 void ftw_push(const char *dirname, struct dtree_dev_t *dev)
 {
 	ftw_stack_top += 1;
