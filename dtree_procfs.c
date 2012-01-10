@@ -665,6 +665,9 @@ int dtree_procfs_open(const char *rootd)
 		return -1;
 	}
 
+	llist_init();
+	ftw_init();
+
 	int err = ftw(rootd, &dtree_walk, DTREE_PROCFS_MAX_LEVEL);
 
 	if(err == -1) {
@@ -702,6 +705,8 @@ void dtree_procfs_close(void)
 		curr->dev.compat = NULL;
 		free(curr);
 	}
+
+	llist_fini();
 }
 
 
