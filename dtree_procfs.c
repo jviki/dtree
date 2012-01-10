@@ -514,6 +514,30 @@ void fill_array_with_entries(struct dtree_entry_t **e, size_t len)
 	assert(len == i); // otherwise this is a BUG
 }
 
+static
+int cmp_entries(const void *va, const void *vb)
+{
+	const struct dtree_entry_t *a = (const struct dtree_entry_t *) va;
+	const struct dtree_entry_t *b = (const struct dtree_entry_t *) vb;
+
+	const char *aname = dtree_dev_name(&a->dev);
+	const char *bname = dtree_dev_name(&b->dev);
+	int cmp_name = strcmp(aname, bname);
+
+	if(cmp_name != 0)
+		return cmp_name;
+
+	const dtree_addr_t abase = dtree_dev_base(&a->dev);
+	const dtree_addr_t bbase = dtree_dev_base(&b->dev);
+
+	if(abase > bbase)
+		return 1;
+	if(abase < bbase)
+		return -1;
+
+	return 0;
+}
+
 
 //
 // Initialization & destruction
