@@ -607,6 +607,21 @@ void assign_id_to_entries(struct dtree_entry_t **e, size_t len)
 	}
 }
 
+/**
+ * Sorts the list of entries and assigns IDs (discriminators)
+ * if necessary. Each entry then should have a unique name.
+ */
+static
+void assign_entry_ids(void)
+{
+	const size_t len = llist_length();
+	struct dtree_entry_t *entries[len];
+
+	fill_array_with_entries(entries, len);
+	sort_entries(entries, len);
+	assign_id_to_entries(entries, len);
+}
+
 
 //
 // Initialization & destruction
