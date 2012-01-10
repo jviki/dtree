@@ -67,7 +67,7 @@ struct dtree_dev_t {
  * Get name of the device.
  */
 DTREE_GETTER
-const char *dtree_dev_name(struct dtree_dev_t *d)
+const char *dtree_dev_name(const struct dtree_dev_t *d)
 {
 	return d->name;
 }
@@ -76,7 +76,7 @@ const char *dtree_dev_name(struct dtree_dev_t *d)
  * Get base address of the device.
  */
 DTREE_GETTER
-dtree_addr_t dtree_dev_base(struct dtree_dev_t *d)
+dtree_addr_t dtree_dev_base(const struct dtree_dev_t *d)
 {
 	return d->base;
 }
@@ -86,7 +86,7 @@ dtree_addr_t dtree_dev_base(struct dtree_dev_t *d)
  * points to NULL.
  */
 DTREE_GETTER
-const char **dtree_dev_compat(struct dtree_dev_t *d)
+const char **dtree_dev_compat(const struct dtree_dev_t *d)
 {
 	return d->compat;
 }

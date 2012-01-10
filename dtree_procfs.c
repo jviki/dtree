@@ -4,6 +4,7 @@
 #include "dtree_procfs.h"
 #include "dtree_error.h"
 #include "dtree_util.h"
+#include "bcd_arith.h"
 
 #include <libgen.h> // basename, dirname
 #include <stdlib.h>
@@ -47,11 +48,33 @@ static struct dtree_entry_t *top = NULL;
  */
 static struct dtree_entry_t *iter = NULL;
 
+/**
+ * Total count of available entries.
+ */
+static size_t entries_count = 0;
+
+static
+void llist_init(void)
+{
+	// otherwise this is a bug in user program
+	// (missing close) or in free of the linked-list
+	assert(iter == NULL);
+
+	entries_count = 0;
+}
+
+static
+void llist_fini(void)
+{
+	iter = NULL;
+}
+
 static
 void llist_append(struct dtree_entry_t *e)
 {
 	e->next = top;
-	top = e;	
+	top = e;
+	entries_count += 1;
 }
 
 static
@@ -62,8 +85,10 @@ struct dtree_entry_t *llist_remove(void)
 	if(top != NULL)
 		top = top->next;
 
-	if(e != NULL)
+	if(e != NULL) {
 		e->next = NULL;
+		entries_count += 1;
+	}
 
 	return e;
 }
@@ -83,6 +108,12 @@ struct dtree_entry_t *llist_last(void)
 	return top;
 }
 
+static
+size_t llist_length(void)
+{
+	return entries_count;
+}
+
 
 //
 // Stack to know the current device
@@ -100,6 +131,11 @@ struct ftw_stack_t {
 
 static struct ftw_stack_t ftw_stack[DTREE_PROCFS_MAX_LEVEL + 1];
 static int ftw_stack_top = -1;
+
+void ftw_init(void)
+{
+	ftw_stack_top = -1;
+}
 
 void ftw_push(const char *dirname, struct dtree_dev_t *dev)
 {
@@ -139,16 +175,30 @@ void ftw_pop(void)
 //
 
 #define SYSERR_OCCURED -2
+#define DEV_NAME_ID_LEN 3
 
+/**
+ * Result (for K == DEV_NAME_ID_LEN == 3):
+ *   +-------------------------------+
+ *   | N | A | M | E | 0 | 0 | 0 | 0 |
+ *   |%%%%%%%%%%%%%%%|###########|ZZZ|
+ *   |      namel    |     K     |   |
+ *   +-------------------------------+
+ *
+ *   For this case: cap == 8
+ */
 static
-const char *copy_devname(void *name, const char *d_name, size_t namel)
+const char *copy_devname(char *name, const char *d_name, size_t namel, size_t cap)
 {
+	assert(1 + namel + DEV_NAME_ID_LEN == cap);
+
 	memcpy(name, d_name, namel);
+	memset(name + namel, 0, DEV_NAME_ID_LEN + 1); // fill the end with zeros
 
-	char *p = (char *) name;
-	p[namel] = '\0';
+	assert(name[namel] == '\0');
+	assert(name[cap - 1] == '\0');
 
-	return (const char *) p;
+	return (const char *) name;
 }
 
 static
@@ -160,19 +210,28 @@ dtree_addr_t parse_devaddr(const char *addr)
 	return (dtree_addr_t) parse_hex(addr, strlen(addr));
 }
 
+/**
+ * Allocates memory for the entry and initializes it.
+ * It allocates `DEV_NAME_ID_LEN` bytes more for the
+ * name that are used later to append an unique identifier
+ * to them.
+ */
 static
 struct dtree_entry_t *build_entry(const char *name, size_t namel, const char *base)
 {
 	struct dtree_entry_t *entry = NULL;
+	const size_t namecap = namel + DEV_NAME_ID_LEN + 1;
+	const size_t mlen = sizeof(struct dtree_entry_t)
+	                  + namecap;
 
-	void *m = malloc(sizeof(struct dtree_entry_t) + namel + 1);
+	void *m = malloc(mlen);
 	if(m == NULL) {
 		dtree_error_from_errno();
 		return NULL;
 	}
 
 	entry = (struct dtree_entry_t *) m;
-	entry->dev.name = copy_devname((void *) (entry + 1), name, namel);
+	entry->dev.name = copy_devname((char *) (entry + 1), name, namel, namecap);
 	entry->dev.base = parse_devaddr(base);
 	entry->dev.compat = &NULL_ENTRY;
 
@@ -468,10 +527,141 @@ int dtree_walk(const char *fpath, const struct stat *sb, int typeflag)
 	return 0;
 }
 
+
+//
+// ID Assignment
+//
+
+static
+void fill_array_with_entries(struct dtree_entry_t **e, size_t len)
+{
+	struct dtree_entry_t *curr = llist_last();
+	size_t i = 0;
+
+	for(i = 0; curr != NULL; ++i) {
+		e[i] = curr;
+		curr = llist_next(curr);
+	}
+
+	assert(len == i); // otherwise this is a BUG
+}
+
+static
+int cmp_entries(const void *va, const void *vb)
+{
+	const struct dtree_entry_t *a = (const struct dtree_entry_t *) va;
+	const struct dtree_entry_t *b = (const struct dtree_entry_t *) vb;
+
+	const char *aname = dtree_dev_name(&a->dev);
+	const char *bname = dtree_dev_name(&b->dev);
+	int cmp_name = strcmp(aname, bname);
+
+	if(cmp_name != 0)
+		return cmp_name;
+
+	const dtree_addr_t abase = dtree_dev_base(&a->dev);
+	const dtree_addr_t bbase = dtree_dev_base(&b->dev);
+
+	if(abase > bbase)
+		return 1;
+	if(abase < bbase)
+		return -1;
+
+	return 0;
+}
+
+static
+void sort_entries(struct dtree_entry_t **e, size_t len)
+{
+	const size_t one_size = sizeof(struct dtree_entry_t *);
+	qsort(e, len, one_size, cmp_entries);
+}
+
+static
+void inject_id(struct dtree_entry_t *e, bcd_t id)
+{
+	struct dtree_dev_t *dev = &e->dev;
+
+	// make the device name mutable
+	char *dname = (char *) dev->name;
+	size_t len  = strlen(dname);
+
+	// where to place the id
+	char *idpos = dname + len;
+
+	const char *idstr = bcd_tostr(id);
+	size_t idlen = strlen(idstr);
+
+	// idstr does not contain separator, thus only '<'
+	assert(idlen < DEV_NAME_ID_LEN);
+
+	*idpos = '-';
+	memcpy((void *) (idpos + 1), idstr, idlen);
+	idpos[idlen + 1] = '\0'; // assure zero at the end
+}
+
+/**
+ * Assigns IDs to each entry in the array.
+ *
+ * The algorithm compares (i - 1)'th and i'th entry.
+ * If they match the previous one - (i - 1)'th - is
+ * marked with id.
+ * If they do not match and the previous pair has matched
+ * the (i - 1)'th is the last of the sequence so it has
+ * to be marked with id as well.
+ */
+static
+void assign_id_to_entries(struct dtree_entry_t **e, size_t len)
+{
+	if(len <= 1)
+		return;
+
+	bcd_t id;
+	bcd_init(id);
+
+	const char *lastname = dtree_dev_name(&e[0]->dev);
+
+	for(size_t i = 1; i < len; ++i) {
+		const char *name = dtree_dev_name(&e[i]->dev);
+
+		if(!strcmp(lastname, name)) {
+			inject_id(e[i - 1], id);
+			int overflow = bcd_inc(id);
+			assert(!overflow);
+		}
+		else {
+			if(!bcd_iszero(id)) // mark the last entry of sequence
+				inject_id(e[i - 1], id);
+
+			bcd_init(id);
+		}
+
+		lastname = name;
+	}
+
+	if(!bcd_iszero(id)) // mark the last entry
+		inject_id(e[len - 1], id);
+}
+
+/**
+ * Sorts the list of entries and assigns IDs (discriminators)
+ * if necessary. Each entry then should have a unique name.
+ */
+static
+void assign_entry_ids(void)
+{
+	const size_t len = llist_length();
+	struct dtree_entry_t *entries[len];
+
+	fill_array_with_entries(entries, len);
+	sort_entries(entries, len);
+	assign_id_to_entries(entries, len);
+}
+
+
 //
 // Initialization & destruction
 //
-
 
 int dtree_procfs_open(const char *rootd)
 {
@@ -479,6 +669,9 @@ int dtree_procfs_open(const char *rootd)
 		dtree_errno_set(EINVAL);
 		return -1;
 	}
+
+	llist_init();
+	ftw_init();
 
 	int err = ftw(rootd, &dtree_walk, DTREE_PROCFS_MAX_LEVEL);
 
@@ -494,6 +687,7 @@ int dtree_procfs_open(const char *rootd)
 		return -1;
 	}
 
+	assign_entry_ids();
 	dtree_reset();
 	return 0;
 }
@@ -516,6 +710,8 @@ void dtree_procfs_close(void)
 		curr->dev.compat = NULL;
 		free(curr);
 	}
+
+	llist_fini();
 }
 
 

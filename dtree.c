@@ -13,6 +13,7 @@ int dtree_open(const char *rootd)
 		return 0;
 	}
 
+	dtree_procfs_close();
 	return err;
 }
 
