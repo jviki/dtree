@@ -64,6 +64,12 @@ void bus_devmem_forget(void *m, int fd)
 	close(fd);
 }
 
+static
+uint32_t bus_devmem_offset(uint32_t base, uint32_t off)
+{
+	return off + get_alignment(base);
+}
+
 static int memfd;
 
 void *bus_access(uint32_t base, uint32_t mlen)
@@ -83,7 +89,7 @@ void bus_write(uint32_t base, uint32_t off, uint32_t value, int len)
 		return;
 
 	uint8_t *cdata = (uint8_t *) m;
-	uint8_t *wdata  = cdata + off;
+	uint8_t *wdata  = cdata + bus_devmem_offset(base, off);
 
 	switch(len) {
 	case 1:
@@ -118,7 +124,7 @@ uint32_t bus_read(uint32_t base, uint32_t off, int len)
 	verbosity_printf(2, "Reading from address '0x%08X'", base + off);
 
 	uint8_t  *cdata = (uint8_t  *) m;
-	uint32_t *rdata = (uint32_t *) (cdata + off);
+	uint32_t *rdata = (uint32_t *) (cdata + bus_devmem_offset(base, off));
 	uint32_t value  = *rdata;
 
 	verbosity_printf(2, "Raw value: 0x%08X", value);
