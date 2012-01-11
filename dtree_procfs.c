@@ -489,15 +489,16 @@ int dtree_walk_file(const char *path, const struct stat *s)
 
 	const char *bname = basename((char *) path); // XXX: be careful of "/"
 
-	if(strcmp("compatible", bname))
-		return 0;
+	if(!strcmp("compatible", bname)) {
+		size_t fsize = s->st_size;
+		if(fsize == 0)
+			return 0;
 
-	size_t fsize = s->st_size;
-	if(fsize == 0)
-		return 0;
+		assert(dev->compat == &NULL_ENTRY);
+		return read_compat_file(dev, path, fsize);
+	}
 
-	assert(dev->compat == &NULL_ENTRY);
-	return read_compat_file(dev, path, fsize);
+	return 0;
 }
 
 /**
