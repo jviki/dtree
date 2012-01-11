@@ -532,6 +532,14 @@ int dtree_walk_file(const char *path, const struct stat *s)
 		return read_compat_file(dev, path, fsize);
 	}
 
+	if(!strcmp("reg", bname)) {
+		size_t fsize = s->st_size;
+		if(fsize == 0)
+			return 0;
+
+		return read_reg_file(dev, path, fsize);
+	}
+
 	return 0;
 }
 
