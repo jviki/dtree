@@ -33,6 +33,12 @@ void verbosity_printf(int level, const char *fmt, ...)
 // Bus access
 //
 
+static
+uint32_t get_alignment(uint32_t base)
+{
+	return base % getpagesize();
+}
+
 void *bus_devmem_access(uint32_t base, uint32_t mlen, int *fd)
 {
 	*fd = open("/dev/mem", O_RDWR);
@@ -41,7 +47,7 @@ void *bus_devmem_access(uint32_t base, uint32_t mlen, int *fd)
 		return NULL;
 	}
 
-	uint32_t aligned_base = base - (base % getpagesize());
+	uint32_t aligned_base = base - get_alignment(base);
 	void *m = mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, *fd, aligned_base);
 	if(m == NULL) {
 		perror("mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, fd, aligned_base)");
