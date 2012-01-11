@@ -455,6 +455,13 @@ int read_compat_file(struct dtree_dev_t *dev, const char *path, size_t fsize)
 
 /**
  * Reads the reg file to memory and extracts the high address.
+ * Should not generate errors other then those concerning I/O or memory.
+ * Invalid values are just thrown away.
+ *
+ * Expected content of reg file: 'bbbbrrrr',
+ * where 'b' is base address digit (1 byte) and 'r' is range digit (1 byte).
+ * Then high address is: B + R - 1,
+ * where B = bbbb and R = rrrr.
  */
 static
 int read_reg_file(struct dtree_dev_t *dev, const char *path, size_t fsize)
