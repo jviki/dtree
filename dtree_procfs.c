@@ -454,6 +454,40 @@ int read_compat_file(struct dtree_dev_t *dev, const char *path, size_t fsize)
 }
 
 /**
+ * Reads the reg file to memory and extracts the high address.
+ */
+static
+int read_reg_file(struct dtree_dev_t *dev, const char *path, size_t fsize)
+{
+	if(fsize != 8)
+		return 0;
+
+	char buff[fsize];
+	int read_err = read_file(path, buff, fsize);
+
+	if(read_err != 0)
+		return read_err;
+
+	///////////////////////////////
+
+	dtree_addr_t range = 0;
+
+	for(size_t i = 0; i < 4; ++i) {
+		dtree_addr_t aval = (dtree_addr_t) buff[7 - i];
+		aval &= 0xFF;
+		range += aval << i * 8;
+	}
+
+	// Validity check:
+	// * careful of too small or too big value
+	//  (if the computed value overflows, it is too big...)
+	if(dev->base + range > dev->base)
+		dev->high = dev->base + range - 1; // get highest address (obtained next possible base)
+
+	return 0;
+}
+
+/**
  * Determines device for the current path.
  */
 static
