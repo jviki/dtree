@@ -183,9 +183,19 @@ int perform_read(const char *dev, uint32_t addr, int len)
 		return 1;
 	}
 
+	dtree_addr_t base = dtree_dev_base(d);
+	dtree_addr_t high = dtree_dev_high(d);
+
+	if(base < high) {
+		if(base + addr > high) {
+			verbosity_printf(1, "Address is out of range of the device: 0x%08X (high: 0x%08X)", base + addr, high);
+			return 2;
+		}
+	}
+
 	verbosity_printf(1, "Action: read, device: '%s', offset: '0x%08X', len: '%d'", dev, addr, len);
 
-	uint32_t value = bus_read(dtree_dev_base(d), addr, len);
+	uint32_t value = bus_read(base, addr, len);
 	printf("0x%08X\n", value);
 
 	dtree_dev_free(d);
@@ -199,7 +209,17 @@ int perform_write(const char *dev, uint32_t addr, uint32_t len, uint32_t value)
 		fprintf(stderr, "No device '%s' found\n", dev);
 		return 1;
 	}
-	
+
+	dtree_addr_t base = dtree_dev_base(d);
+	dtree_addr_t high = dtree_dev_high(d);
+
+	if(base < high) {
+		if(base + addr > high) {
+			verbosity_printf(1, "Address is out of range of the device: 0x%08X (high: 0x%08X)", base + addr, high);
+			return 2;
+		}
+	}
+
 	verbosity_printf(1, "Action: write, device: '%s', offset: '0x%08X', data: '0x%08X', len: '%d'", dev, addr, value, len);
 
 	bus_write(dtree_dev_base(d), addr, value, len);
