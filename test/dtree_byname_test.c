@@ -78,6 +78,9 @@ void test_find_with_discriminator(void)
 
 	const char  *name = dtree_dev_name(dev);
 	dtree_addr_t base = dtree_dev_base(dev);
+	dtree_addr_t high = dtree_dev_high(dev);
+
+	fail_on_true(high > base, "Invalid high, greater then base (or was the fake device-tree updated?)");
 
 	printf("DEV '%s' at 0x%08X\n", name, base);
 	dtree_dev_free(dev);
