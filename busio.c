@@ -41,9 +41,10 @@ void *bus_devmem_access(uint32_t base, uint32_t mlen, int *fd)
 		return NULL;
 	}
 
-	void *m = mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, *fd, base);
+	uint32_t aligned_base = base - (base % getpagesize());
+	void *m = mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, *fd, aligned_base);
 	if(m == NULL) {
-		perror("mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, fd, base)");
+		perror("mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, fd, aligned_base)");
 		close(*fd);
 		return NULL;
 	}
