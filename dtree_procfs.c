@@ -233,6 +233,7 @@ struct dtree_entry_t *build_entry(const char *name, size_t namel, const char *ba
 	entry = (struct dtree_entry_t *) m;
 	entry->dev.name = copy_devname((char *) (entry + 1), name, namel, namecap);
 	entry->dev.base = parse_devaddr(base);
+	entry->dev.high = 0;
 	entry->dev.compat = &NULL_ENTRY;
 
 	return entry;
