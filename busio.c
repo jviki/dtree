@@ -188,6 +188,7 @@ int perform_read(const char *dev, uint32_t addr, int len)
 	uint32_t value = bus_read(dtree_dev_base(d), addr, len);
 	printf("0x%08X\n", value);
 
+	dtree_dev_free(d);
 	return 0;
 }
 
@@ -202,6 +203,8 @@ int perform_write(const char *dev, uint32_t addr, uint32_t len, uint32_t value)
 	verbosity_printf(1, "Action: write, device: '%s', offset: '0x%08X', data: '0x%08X', len: '%d'", dev, addr, value, len);
 
 	bus_write(dtree_dev_base(d), addr, value, len);
+
+	dtree_dev_free(d);
 	return 0;
 }
 
