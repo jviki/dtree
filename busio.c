@@ -324,6 +324,10 @@ int main(int argc, char **argv)
 	// name of the device to access
 	const char *dev   = NULL;
 
+	// filename
+	const char *file  = NULL;
+	int file_valid    = 0;
+
 	int opt;
 	opterr = 0;
 
@@ -362,6 +366,11 @@ int main(int argc, char **argv)
 			value = parse_value(optarg);
 			value_valid = 1;
 			break;
+
+		case 'f':
+			file = optarg;
+			file_valid = 1;
+			act = opt;
 
 		case '1':
 		case '2':
