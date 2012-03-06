@@ -416,6 +416,15 @@ int main(int argc, char **argv)
 
 		break;
 
+	case 'f':
+		assert(dev != NULL);
+		if(addr_valid && file_valid) {
+			err = perform_file_write(dev, addr, file);
+			goto exit;
+		}
+
+		break;
+
 	case '\0':
 		fprintf(stderr, "No action has been specified\n");
 		err = 1;
