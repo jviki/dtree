@@ -33,6 +33,8 @@ void verbosity_printf(int level, const char *fmt, ...)
 // Bus access
 //
 
+static uint32_t pagenum;
+
 void *bus_devmem_access(uint32_t base, uint32_t mlen, int *fd)
 {
 	*fd = open("/dev/mem", O_RDWR);
