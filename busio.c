@@ -322,6 +322,9 @@ int main(int argc, char **argv)
 	// name of the device to access
 	const char *dev   = NULL;
 
+	// input for -w when -d is missing
+	FILE *finput = stdin;
+
 	int opt;
 	opterr = 0;
 
@@ -398,11 +401,19 @@ int main(int argc, char **argv)
 
 	case 'w':
 		assert(dev != NULL);
-		if(addr_valid && value_valid) {
+
+		if(!addr_valid)
+			break;
+
+		if(value_valid) {
 			err = perform_write(dev, addr, len, value);
 			goto exit;
 		}
-
+		else {
+			verbosity_printf(1, "Reading from <stdin>");
+			err = perform_file_write(dev, addr, len, finput);
+			goto exit;
+		}
 
 		break;
 
