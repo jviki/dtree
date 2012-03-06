@@ -228,7 +228,7 @@ uint32_t parse_value(const char *s)
 
 int print_help(const char *prog)
 {
-	fprintf(stderr, "Usage: %s [ -V | -h | -l | -r <dev> | -w <dev> ] [ -t <path> ] [ -a <addr> ] [ -d <data> ] [ -1 | -2 | -4 ]\n", prog);
+	fprintf(stderr, "Usage: %s [ -V | -h | -l | -r <dev> | -w <dev> ] [ -t <path> ] [ -a <addr> ] [ -d <data> | -f <file>] [ -1 | -2 | -4 ]\n", prog);
 	fprintf(stderr, "All numbers are treated as hexadecimals with two possible formats, eg.:\n");
 	fprintf(stderr, "* 0xDEEDBEAF\n");
 	fprintf(stderr, "* DEEDBEAF (=> '0x' is optional)\n");
@@ -245,6 +245,8 @@ int print_help(const char *prog)
 	fprintf(stderr, "  $ %s -r timer -a 0x04 -1\n", prog);
 	fprintf(stderr, "* Write 0x00FF to peripheral named 'timer' to offset 0x08\n");
 	fprintf(stderr, "  $ %s -w timer -a 0x08 -d 0xFF -2\n", prog);
+	fprintf(stderr, "* Write content of file 'file.dat' (hexadecimal data in format shown above) to peripheral named 'proc' starting at offset 0x00\n");
+	fprintf(stderr, "  $ %s -w proc -a 0x00 -f file.dat -2\n", prog);
 	return 0;
 }
 
