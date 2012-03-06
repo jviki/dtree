@@ -223,7 +223,7 @@ uint32_t parse_value(const char *s)
 	return parse_hex(s, strlen(s));
 }
 
-#define GETOPT_STR "hlr:w:t:a:d:124vV"
+#define GETOPT_STR "hlr:w:t:a:d:f:124vV"
 #define DTREE_PATH "/proc/device-tree"
 
 int print_help(const char *prog)
