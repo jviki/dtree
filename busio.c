@@ -208,26 +208,26 @@ int perform_write(const char *dev, uint32_t addr, uint32_t len, uint32_t value)
 	return 0;
 }
 
-int perform_file_write(const char *dev, uint32_t addr, const char *file)
+/**
+ * Performs a sequence of write actions based on a file input.
+ * The file input are hexadecimal numbers (given in parse_hex
+ * compatible format), one per line.
+ *
+ * The given file descriptor is closed (even on error).
+ */
+int perform_file_write(const char *dev, uint32_t addr, uint32_t len, FILE *f)
 {
-	FILE * f;
 	char s_value [65];
 	uint32_t value;
-	uint32_t len = 4;
+
+	assert(f != NULL);
 
 	struct dtree_dev_t *d = dtree_byname(dev);
 	if(d == NULL) {
 		fprintf(stderr, "No device '%s' found\n", dev);
+		fclose(f);
 		return 1;
 	}
-
-	f = fopen (file, "r");
-	if(f == NULL) {
-		fprintf(stderr, "No file '%s' found\n", file);
-		return 1;
-	}
-
-	verbosity_printf(1, "Action: write file, device: '%s', offset: '0x%08X', file: '%s'", dev, addr, file);
 
 	while (fgets(s_value, 65, f) != NULL) {
 		if (s_value[strlen(s_value) - 1] == '\n') {
