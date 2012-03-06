@@ -285,6 +285,8 @@ int print_help(const char *prog)
 	fprintf(stderr, "  $ %s -r timer -a 0x04 -1\n", prog);
 	fprintf(stderr, "* Write 0x00FF to peripheral named 'timer' to offset 0x08\n");
 	fprintf(stderr, "  $ %s -w timer -a 0x08 -d 0xFF -2\n", prog);
+	fprintf(stderr, "* Write words (4) from stdin to peripheral named 'timer' to offset 0x08\n");
+	fprintf(stderr, "  $ %s -w timer -a 0x08\n", prog);
 	return 0;
 }
 
