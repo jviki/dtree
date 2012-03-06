@@ -41,9 +41,13 @@ void *bus_devmem_access(uint32_t base, uint32_t mlen, int *fd)
 		return NULL;
 	}
 
-	void *m = mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, *fd, base);
+	// Get number of pages for mmap
+	pagenum = mlen / getpagesize();
+	pagenum += (mlen % getpagesize() == 0) ? 0: 1;
+    
+	void *m = mmap(NULL, pagenum * getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, *fd, base);
 	if(m == NULL) {
-		perror("mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, fd, base)");
+		perror("mmap(NULL, pagenum * getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, fd, base)");
 		close(*fd);
 		return NULL;
 	}
@@ -53,7 +57,7 @@ void *bus_devmem_access(uint32_t base, uint32_t mlen, int *fd)
 
 void bus_devmem_forget(void *m, int fd)
 {
-	munmap(m, getpagesize());
+	munmap(m, pagenum * getpagesize());
 	close(fd);
 }
 
