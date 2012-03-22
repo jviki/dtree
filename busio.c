@@ -33,6 +33,12 @@ void verbosity_printf(int level, const char *fmt, ...)
 // Bus access
 //
 
+static
+uint32_t get_alignment(uint32_t base)
+{
+	return base % getpagesize();
+}
+
 void *bus_devmem_access(uint32_t base, uint32_t mlen, int *fd)
 {
 	*fd = open("/dev/mem", O_RDWR);
@@ -41,9 +47,10 @@ void *bus_devmem_access(uint32_t base, uint32_t mlen, int *fd)
 		return NULL;
 	}
 
-	void *m = mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, *fd, base);
+	uint32_t aligned_base = base - get_alignment(base);
+	void *m = mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, *fd, aligned_base);
 	if(m == NULL) {
-		perror("mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, fd, base)");
+		perror("mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, fd, aligned_base)");
 		close(*fd);
 		return NULL;
 	}
@@ -55,6 +62,12 @@ void bus_devmem_forget(void *m, int fd)
 {
 	munmap(m, getpagesize());
 	close(fd);
+}
+
+static
+uint32_t bus_devmem_offset(uint32_t base, uint32_t off)
+{
+	return off + get_alignment(base);
 }
 
 static int memfd;
@@ -76,7 +89,7 @@ void bus_write(uint32_t base, uint32_t off, uint32_t value, int len)
 		return;
 
 	uint8_t *cdata = (uint8_t *) m;
-	uint8_t *wdata  = cdata + off;
+	uint8_t *wdata  = cdata + bus_devmem_offset(base, off);
 
 	switch(len) {
 	case 1:
@@ -111,7 +124,7 @@ uint32_t bus_read(uint32_t base, uint32_t off, int len)
 	verbosity_printf(2, "Reading from address '0x%08X'", base + off);
 
 	uint8_t  *cdata = (uint8_t  *) m;
-	uint32_t *rdata = (uint32_t *) (cdata + off);
+	uint32_t *rdata = (uint32_t *) (cdata + bus_devmem_offset(base, off));
 	uint32_t value  = *rdata;
 
 	verbosity_printf(2, "Raw value: 0x%08X", value);
