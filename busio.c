@@ -209,6 +209,11 @@ int perform_write(const char *dev, uint32_t addr, uint32_t len, uint32_t value)
 }
 
 /**
+ * Size of line buffer, place where to read hexadecimal values from stdin.
+ */
+#define S_BUFFSIZE 65
+
+/**
  * Performs a sequence of write actions based on a file input.
  * The file input are hexadecimal numbers (given in parse_hex
  * compatible format), one per line.
@@ -217,7 +222,7 @@ int perform_write(const char *dev, uint32_t addr, uint32_t len, uint32_t value)
  */
 int perform_file_write(const char *dev, uint32_t addr, uint32_t len, FILE *f)
 {
-	char s_value [65];
+	char s_value [S_BUFFSIZE];
 	uint32_t value;
 
 	assert(f != NULL);
@@ -229,7 +234,7 @@ int perform_file_write(const char *dev, uint32_t addr, uint32_t len, FILE *f)
 		return 1;
 	}
 
-	while (fgets(s_value, 65, f) != NULL) {
+	while (fgets(s_value, S_BUFFSIZE, f) != NULL) {
 		size_t s_len = strlen(s_value);
 
 		if (s_value[s_len - 1] == '\n') {
