@@ -248,6 +248,53 @@ int perform_write(const char *dev, uint32_t addr, uint32_t len, uint32_t value)
 	return 0;
 }
 
+/**
+ * Size of line buffer, place where to read hexadecimal values from stdin.
+ */
+#define S_BUFFSIZE 65
+
+/**
+ * Performs a sequence of write actions based on a file input.
+ * The file input are hexadecimal numbers (given in parse_hex
+ * compatible format), one per line.
+ *
+ * The given file descriptor is closed (even on error).
+ */
+int perform_file_write(const char *dev, uint32_t addr, uint32_t len, FILE *f)
+{
+	char s_value [S_BUFFSIZE];
+	uint32_t value;
+
+	assert(f != NULL);
+
+	struct dtree_dev_t *d = dtree_byname(dev);
+	if(d == NULL) {
+		fprintf(stderr, "No device '%s' found\n", dev);
+		fclose(f);
+		return 1;
+	}
+
+	while (fgets(s_value, S_BUFFSIZE, f) != NULL) {
+		size_t s_len = strlen(s_value);
+
+		if (s_value[s_len - 1] == '\n') {
+			s_value[s_len - 1] = '\0';
+		}
+
+		value = parse_hex(s_value, s_len);
+
+		verbosity_printf(1, "Action: write, device: '%s', offset: '0x%08X', data: '0x%08X', len: '%d'", dev, addr, value, len);
+
+		bus_write(dtree_dev_base(d), addr, value, len);
+
+		addr += len;
+	}
+
+	dtree_dev_free(d);
+	fclose(f);
+
+	return 0;
+}
 
 //
 // Main
@@ -285,6 +332,8 @@ int print_help(const char *prog)
 	fprintf(stderr, "  $ %s -r timer -a 0x04 -1\n", prog);
 	fprintf(stderr, "* Write 0x00FF to peripheral named 'timer' to offset 0x08\n");
 	fprintf(stderr, "  $ %s -w timer -a 0x08 -d 0xFF -2\n", prog);
+	fprintf(stderr, "* Write words (4) from stdin to peripheral named 'timer' to offset 0x08\n");
+	fprintf(stderr, "  $ %s -w timer -a 0x08\n", prog);
 	return 0;
 }
 
@@ -321,6 +370,9 @@ int main(int argc, char **argv)
 
 	// name of the device to access
 	const char *dev   = NULL;
+
+	// input for -w when -d is missing
+	FILE *finput = stdin;
 
 	int opt;
 	opterr = 0;
@@ -398,8 +450,17 @@ int main(int argc, char **argv)
 
 	case 'w':
 		assert(dev != NULL);
-		if(addr_valid && value_valid) {
+
+		if(!addr_valid)
+			break;
+
+		if(value_valid) {
 			err = perform_write(dev, addr, len, value);
+			goto exit;
+		}
+		else {
+			verbosity_printf(1, "Reading from <stdin>");
+			err = perform_file_write(dev, addr, len, finput);
 			goto exit;
 		}
 
