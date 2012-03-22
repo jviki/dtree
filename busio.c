@@ -230,11 +230,13 @@ int perform_file_write(const char *dev, uint32_t addr, uint32_t len, FILE *f)
 	}
 
 	while (fgets(s_value, 65, f) != NULL) {
-		if (s_value[strlen(s_value) - 1] == '\n') {
-			s_value[strlen(s_value) - 1] = '\0';
+		size_t s_len = strlen(s_value);
+
+		if (s_value[s_len - 1] == '\n') {
+			s_value[s_len - 1] = '\0';
 		}
 
-		value = parse_hex(s_value, strlen(s_value));
+		value = parse_hex(s_value, s_len);
 
 		verbosity_printf(1, "Action: write, device: '%s', offset: '0x%08X', data: '0x%08X', len: '%d'", dev, addr, value, len);
 
