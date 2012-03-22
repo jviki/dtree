@@ -78,10 +78,32 @@ void test_find_with_discriminator(void)
 
 	const char  *name = dtree_dev_name(dev);
 	dtree_addr_t base = dtree_dev_base(dev);
+	dtree_addr_t high = dtree_dev_high(dev);
+
+	fail_on_true(high > base, "Invalid high, greater then base (or was the fake device-tree updated?)");
 
 	printf("DEV '%s' at 0x%08X\n", name, base);
 	dtree_dev_free(dev);
 
+	test_end();
+}
+
+void test_find_debug(void)
+{
+	test_start();
+
+	struct dtree_dev_t *dev = NULL;
+	dev = dtree_byname("debug");
+	fail_on_true(dev == NULL, "Could not find the device 'debug'");
+
+	const char  *name = dtree_dev_name(dev);
+	dtree_addr_t base = dtree_dev_base(dev);
+	dtree_addr_t high = dtree_dev_high(dev);
+
+	printf("DEV '%s' at 0x%08X .. 0x%08X\n", name, base, high);
+	dtree_dev_free(dev);
+
+	fail_on_false(high - base == 0xFFFF, "Invalid high has been read for debug");
 	test_end();
 }
 
@@ -106,6 +128,9 @@ int main(void)
 	dtree_reset();
 
 	test_find_with_discriminator();
+	dtree_reset();
+
+	test_find_debug();
 	dtree_reset();
 
 	dtree_close();

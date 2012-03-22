@@ -233,6 +233,7 @@ struct dtree_entry_t *build_entry(const char *name, size_t namel, const char *ba
 	entry = (struct dtree_entry_t *) m;
 	entry->dev.name = copy_devname((char *) (entry + 1), name, namel, namecap);
 	entry->dev.base = parse_devaddr(base);
+	entry->dev.high = entry->dev.base;
 	entry->dev.compat = &NULL_ENTRY;
 
 	return entry;
@@ -453,6 +454,47 @@ int read_compat_file(struct dtree_dev_t *dev, const char *path, size_t fsize)
 }
 
 /**
+ * Reads the reg file to memory and extracts the high address.
+ * Should not generate errors other then those concerning I/O or memory.
+ * Invalid values are just thrown away.
+ *
+ * Expected content of reg file: 'bbbbrrrr',
+ * where 'b' is base address digit (1 byte) and 'r' is range digit (1 byte).
+ * Then high address is: B + R - 1,
+ * where B = bbbb and R = rrrr.
+ */
+static
+int read_reg_file(struct dtree_dev_t *dev, const char *path, size_t fsize)
+{
+	if(fsize != 8)
+		return 0;
+
+	char buff[fsize];
+	int read_err = read_file(path, buff, fsize);
+
+	if(read_err != 0)
+		return read_err;
+
+	///////////////////////////////
+
+	dtree_addr_t range = 0;
+
+	for(size_t i = 0; i < 4; ++i) {
+		dtree_addr_t aval = (dtree_addr_t) buff[7 - i];
+		aval &= 0xFF;
+		range += aval << i * 8;
+	}
+
+	// Validity check:
+	// * careful of too small or too big value
+	//  (if the computed value overflows, it is too big...)
+	if(dev->base + range > dev->base)
+		dev->high = dev->base + range - 1; // get highest address (obtained next possible base)
+
+	return 0;
+}
+
+/**
  * Determines device for the current path.
  */
 static
@@ -488,15 +530,24 @@ int dtree_walk_file(const char *path, const struct stat *s)
 
 	const char *bname = basename((char *) path); // XXX: be careful of "/"
 
-	if(strcmp("compatible", bname))
-		return 0;
+	if(!strcmp("compatible", bname)) {
+		size_t fsize = s->st_size;
+		if(fsize == 0)
+			return 0;
 
-	size_t fsize = s->st_size;
-	if(fsize == 0)
-		return 0;
+		assert(dev->compat == &NULL_ENTRY);
+		return read_compat_file(dev, path, fsize);
+	}
 
-	assert(dev->compat == &NULL_ENTRY);
-	return read_compat_file(dev, path, fsize);
+	if(!strcmp("reg", bname)) {
+		size_t fsize = s->st_size;
+		if(fsize == 0)
+			return 0;
+
+		return read_reg_file(dev, path, fsize);
+	}
+
+	return 0;
 }
 
 /**

@@ -35,6 +35,12 @@ void verbosity_printf(int level, const char *fmt, ...)
 
 static uint32_t pagenum;
 
+static
+uint32_t get_alignment(uint32_t base)
+{
+	return base % getpagesize();
+}
+
 void *bus_devmem_access(uint32_t base, uint32_t mlen, int *fd)
 {
 	*fd = open("/dev/mem", O_RDWR);
@@ -43,13 +49,15 @@ void *bus_devmem_access(uint32_t base, uint32_t mlen, int *fd)
 		return NULL;
 	}
 
+	uint32_t aligned_base = base - get_alignment(base);
+
 	// Get number of pages for mmap
 	pagenum = mlen / getpagesize();
 	pagenum += (mlen % getpagesize() == 0) ? 0: 1;
     
-	void *m = mmap(NULL, pagenum * getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, *fd, base);
+	void *m = mmap(NULL, pagenum * getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, *fd, aligned_base);
 	if(m == NULL) {
-		perror("mmap(NULL, pagenum * getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, fd, base)");
+		perror("mmap(NULL, pagenum * getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED, fd, aligned_base)");
 		close(*fd);
 		return NULL;
 	}
@@ -61,6 +69,12 @@ void bus_devmem_forget(void *m, int fd)
 {
 	munmap(m, pagenum * getpagesize());
 	close(fd);
+}
+
+static
+uint32_t bus_devmem_offset(uint32_t base, uint32_t off)
+{
+	return off + get_alignment(base);
 }
 
 static int memfd;
@@ -82,7 +96,7 @@ void bus_write(uint32_t base, uint32_t off, uint32_t value, int len)
 		return;
 
 	uint8_t *cdata = (uint8_t *) m;
-	uint8_t *wdata  = cdata + off;
+	uint8_t *wdata  = cdata + bus_devmem_offset(base, off);
 
 	switch(len) {
 	case 1:
@@ -117,7 +131,7 @@ uint32_t bus_read(uint32_t base, uint32_t off, int len)
 	verbosity_printf(2, "Reading from address '0x%08X'", base + off);
 
 	uint8_t  *cdata = (uint8_t  *) m;
-	uint32_t *rdata = (uint32_t *) (cdata + off);
+	uint32_t *rdata = (uint32_t *) (cdata + bus_devmem_offset(base, off));
 	uint32_t value  = *rdata;
 
 	verbosity_printf(2, "Raw value: 0x%08X", value);
@@ -189,9 +203,19 @@ int perform_read(const char *dev, uint32_t addr, int len)
 		return 1;
 	}
 
+	dtree_addr_t base = dtree_dev_base(d);
+	dtree_addr_t high = dtree_dev_high(d);
+
+	if(base < high) {
+		if(base + addr > high) {
+			verbosity_printf(1, "Address is out of range of the device: 0x%08X (high: 0x%08X)", base + addr, high);
+			return 2;
+		}
+	}
+
 	verbosity_printf(1, "Action: read, device: '%s', offset: '0x%08X', len: '%d'", dev, addr, len);
 
-	uint32_t value = bus_read(dtree_dev_base(d), addr, len);
+	uint32_t value = bus_read(base, addr, len);
 	printf("0x%08X\n", value);
 
 	dtree_dev_free(d);
@@ -205,7 +229,17 @@ int perform_write(const char *dev, uint32_t addr, uint32_t len, uint32_t value)
 		fprintf(stderr, "No device '%s' found\n", dev);
 		return 1;
 	}
-	
+
+	dtree_addr_t base = dtree_dev_base(d);
+	dtree_addr_t high = dtree_dev_high(d);
+
+	if(base < high) {
+		if(base + addr > high) {
+			verbosity_printf(1, "Address is out of range of the device: 0x%08X (high: 0x%08X)", base + addr, high);
+			return 2;
+		}
+	}
+
 	verbosity_printf(1, "Action: write, device: '%s', offset: '0x%08X', data: '0x%08X', len: '%d'", dev, addr, value, len);
 
 	bus_write(dtree_dev_base(d), addr, value, len);
