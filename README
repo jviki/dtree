@@ -19,6 +19,7 @@ about the device. Currently it offers these properties:
 
 * `name` - name of the device
 * `base` - base address of the device
+* `high` - highest address of the device (not mandatory, can be set to be <= `base`, if not available)
 * `compat` - array of compatible device types (finished with NULL)
 
 The library is not reentrant and thus not thread safe. If it is successfully
