@@ -11,8 +11,9 @@ void test_all_dev(const int expect)
 	while((curr = dtree_next())) {
 		const char *name  = dtree_dev_name(curr);
 		dtree_addr_t base = dtree_dev_base(curr);
+		dtree_addr_t high = dtree_dev_high(curr);
 
-		printf("DEV '%s' at 0x%08X\n", name, base);
+		printf("DEV '%s' at 0x%08X .. 0x%08X\n", name, base, high);
 		print_compat(curr);
 
 		dtree_dev_free(curr);

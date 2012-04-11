@@ -52,12 +52,13 @@ typedef uint32_t dtree_addr_t;
 /**
  * Device info representation.
  *
- * Consists of the name, address and array of
- * compatible devices. Last pointer in compat is NULL.
+ * Consists of the name, address (base and highest address)
+ * and array of compatible devices. Last pointer in compat is NULL.
  */
 struct dtree_dev_t {
 	const char  *name;
 	dtree_addr_t base;
+	dtree_addr_t high;
 	const char  **compat;
 };
 
@@ -79,6 +80,21 @@ DTREE_GETTER
 dtree_addr_t dtree_dev_base(const struct dtree_dev_t *d)
 {
 	return d->base;
+}
+
+/**
+ * Get highest address of the device.
+ * Eg.
+ *    base  := 0x81000000
+ *    high  := 0x8100FFFF
+ *    range := 0x00010000
+ *
+ * If dev.high <= dev.base then high is invalid (eg. not provided by implementation).
+ */
+DTREE_GETTER
+dtree_addr_t dtree_dev_high(const struct dtree_dev_t *d)
+{
+	return d->high;
 }
 
 /**
