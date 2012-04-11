@@ -169,7 +169,7 @@ void bus_list(void)
 	struct dtree_dev_t *dev;
 	while((dev = dtree_next()) != NULL) {
 		printf("%s", dtree_dev_name(dev));
-		printf(" at 0x%X", dtree_dev_base(dev));
+		printf(" at 0x%X..0x%X", dtree_dev_base(dev), dtree_dev_high(dev));
 
 		const char **compat = dtree_dev_compat(dev);
 		if(compat[0] != NULL)
