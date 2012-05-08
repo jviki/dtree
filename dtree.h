@@ -176,6 +176,8 @@ void dtree_dev_free(struct dtree_dev_t *dev);
  * operations except dtree_close() and dtree_errstr()
  * is undefined.
  *
+ * Returns true when the module is in an error state.
+ *
  * Error handling has to be done before next possible
  * failing call. That call would overwrite current
  * error state.
