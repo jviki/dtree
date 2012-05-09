@@ -54,6 +54,19 @@ struct dtree_dev_t *dtree_byname(const char *name)
 	return curr;
 }
 
+static
+int is_compatible(const struct dtree_dev_t *dev, const char *compat)
+{
+	const char **dev_compat = dtree_dev_compat(dev);
+
+	for(int i = 0; dev_compat[i] != NULL; ++i) {
+		if(!strcmp(dev_compat[i], compat))
+			return 1;
+	}
+
+	return 0;
+}
+
 struct dtree_dev_t *dtree_bycompat(const char *compat)
 {
 	struct dtree_dev_t *curr = NULL;
