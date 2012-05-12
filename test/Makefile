@@ -18,6 +18,21 @@ dtree_parsehex_test: dtree_parsehex_test.c libdtree.a
 dtree_bycompat_test: dtree_bycompat_test.c libdtree.a
 dtree_bcd_test: dtree_bcd_test.c libdtree.a
 
+ifeq ($(SHELL),/bin/bash)
+run: run-bash
+else
+run: $(TESTS)
+	$(Q) for test in $(TESTS); do ./$$test; done
+endif
+
+run-bash: $(TESTS)
+	$(Q) fail=$$(tput bold; tput setaf 1) &&           \
+	     pass=$$(tput bold; tput setaf 2) &&           \
+	     normal=$$(tput sgr0)                          \
+	  && for test in $(TESTS); do ./$$test 2>&1 | sed  \
+	     -e "s/ERROR/$${fail}ERROR$${normal}/"         \
+	     -e "s/SUCCESS/$${pass}SUCCESS$${normal}/"; done
+
 libdtree.a: force
 	$(Q) $(MAKE) -C .. $@
 	$(Q) ln -f ../$@ $@
