@@ -336,7 +336,7 @@ int read_file(const char *path, char *buff, const size_t len)
 
 /**
  * Counts number of zero-terminated strings in the buffer.
- * If the last string doesn't ends with zero, it is not counted.
+ * If the last string doesn't end with zero, it is not counted.
  */
 static
 size_t strings_count(char *buff, size_t len)
