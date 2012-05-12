@@ -24,6 +24,7 @@ libdtree.a: force
 
 clean:
 	$(Q) $(RM) *.o
+	$(Q) $(RM) $(TESTS)
 
 force:
 .PHONY: all clean force
