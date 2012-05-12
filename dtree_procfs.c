@@ -87,7 +87,7 @@ struct dtree_entry_t *llist_remove(void)
 
 	if(e != NULL) {
 		e->next = NULL;
-		entries_count += 1;
+		entries_count -= 1;
 	}
 
 	return e;
