@@ -69,6 +69,49 @@ int l_dtree_close(lua_State *l)
 	return 0;
 }
 
+static
+int l_dtree_next(lua_State *l) {
+	if(state == L_DTREE_CLOSE)
+		luaL_error(l, "Invalid call to dtree.next(), call dtree.open() first");
+
+	struct dtree_dev_t *dev = dtree_next();
+	if(dev == NULL) {
+		if(dtree_iserror())
+			luaL_error(l, dtree_errstr());
+
+		lua_pushboolean(l, 0);
+		return 1;
+	}
+
+	lua_createtable(l, 0, 4);
+
+	lua_pushstring(l, "name");
+	lua_pushstring(l, dtree_dev_name(dev));
+	lua_rawset(l, -3);
+
+	lua_pushstring(l, "base");
+	lua_pushinteger(l, dtree_dev_base(dev));
+	lua_rawset(l, -3);
+
+	lua_pushstring(l, "high");
+	lua_pushinteger(l, dtree_dev_high(dev));
+	lua_rawset(l, -3);
+
+	lua_pushstring(l, "compat");
+	lua_newtable(l);
+	const char **compat = dtree_dev_compat(dev);
+	int i;
+
+	for(i = 0; compat[i] != NULL; ++i) {
+		lua_pushstring(l, compat[i]);
+		lua_rawseti(l, -2, i);
+	}
+
+	lua_rawset(l, -3);
+
+	dtree_dev_free(dev);
+	return 1;
+}
 
 //
 // Register in Lua
@@ -79,6 +122,7 @@ struct luaL_reg dtreelib[] =
 {
 	{"open",  l_dtree_open},
 	{"close", l_dtree_close},
+	{"next",  l_dtree_next},
 	{NULL, NULL}
 };
 
