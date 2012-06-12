@@ -15,6 +15,9 @@ busio: busio.o
 	$(CC) $(LDFLAGS) $^ -L. -ldtree -o $@
 busio.o: busio.c
 
+lua-test:
+	$(CC) -o lua-test -DTEST lua_dtree.c -llua -L. -ldtree
+
 clean:
 	$(Q) $(RM) *.o
 
