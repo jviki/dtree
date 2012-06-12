@@ -84,6 +84,14 @@ struct luaL_reg dtreelib[] =
 
 int luaopen_dtreelib(lua_State *l)
 {
+	if(sizeof(lua_Integer) < sizeof(dtree_addr_t)) {
+		luaL_error(l,
+		  "Too short lua_Integer (%d B) data type, required at least %d B",
+		  sizeof(lua_Integer), sizeof(dtree_addr_t));
+
+		return 0;
+	}
+
 	luaL_openlib(l, "dtree", dtreelib, 0);
 	return 1;
 }
