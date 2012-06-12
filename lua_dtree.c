@@ -87,3 +87,18 @@ int luaopen_dtreelib(lua_State *l)
 	luaL_openlib(l, "dtree", dtreelib, 0);
 	return 1;
 }
+
+#ifdef TEST
+#include <stdio.h>
+
+int main(void)
+{
+	lua_State *l;
+	l = luaL_newstate();
+	luaL_openlibs(l);
+	luaopen_dtreelib(l);
+	printf("result: %d\n", luaL_dofile(l, "test.lua"));
+	lua_close(l);
+	return 0;
+}
+#endif
