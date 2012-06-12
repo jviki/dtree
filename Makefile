@@ -17,3 +17,8 @@ busio.o: busio.c
 
 clean:
 	$(Q) $(RM) *.o
+
+distclean: clean
+	$(Q) $(RM) libdtree.a
+	$(Q) $(RM) libdtree.so
+	$(Q) $(RM) busio
