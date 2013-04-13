@@ -4,6 +4,7 @@ CFLAGS = -std=c99 -Wall -pedantic -Wextra -I.. -g
 CFLAGS += -DDEVICE_TREE='"/proc/device-tree"'
 
 Q ?= @
+VALGRIND ?= valgrind --leak-check=full --show-reachable=yes
 
 TESTS  = dtree_open_test
 TESTS += dtree_next_test
@@ -26,14 +27,14 @@ ifeq ($(SHELL),/bin/bash)
 run: run-bash
 else
 run: $(TESTS)
-	$(Q) for test in $(TESTS); do ./$$test; done
+	$(Q) for test in $(TESTS); do $(VALGRIND) ./$$test; done
 endif
 
 run-bash: $(TESTS)
 	$(Q) fail=$$(tput bold; tput setaf 1) &&           \
 	     pass=$$(tput bold; tput setaf 2) &&           \
 	     normal=$$(tput sgr0)                          \
-	  && for test in $(TESTS); do ./$$test 2>&1 | sed  \
+	  && for test in $(TESTS); do $(VALGRIND) ./$$test 2>&1 | sed  \
 	     -e "s/ERROR/$${fail}ERROR$${normal}/"         \
 	     -e "s/SUCCESS/$${pass}SUCCESS$${normal}/"; done
 
