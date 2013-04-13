@@ -36,8 +36,8 @@ void test_pass_file(void)
 void test_pass_mostly_valid(void)
 {
 	test_start();
-	int err = dtree_open("/proc/device-tree");
-	fail_on_error(err, "Open of /proc/device-tree failed, is it present on the system?");
+	int err = dtree_open(DEVICE_TREE);
+	fail_on_error(err, "Open of " DEVICE_TREE " failed, is it present on the system?");
 	warn_on_true(dtree_iserror(), "Error is indicated by dtree_iserror(), but should not be");
 	dtree_close();
 	test_end();

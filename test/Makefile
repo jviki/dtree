@@ -1,6 +1,8 @@
 CC = gcc
 CFLAGS = -std=c99 -Wall -pedantic -Wextra -I.. -g
 
+CFLAGS += -DDEVICE_TREE='"/proc/device-tree"'
+
 Q ?= @
 
 TESTS  = dtree_open_test
