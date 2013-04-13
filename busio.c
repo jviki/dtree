@@ -181,6 +181,9 @@ void bus_list(void)
 		printf("\n");
 		dtree_dev_free(dev);
 	}
+
+	if(dtree_iserror())
+		fprintf(stderr, "Error: %s\n", dtree_errstr());
 }
 
 
