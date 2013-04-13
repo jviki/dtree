@@ -5,6 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifndef DEVICE_TREE
+#define DEVICE_TREE "/proc/device-tree"
+#endif
+
 void _test_start(const char *func, const char *file, int lineno)
 {
 	fprintf(stderr, "Running '%s' (%s:%d)\n", func, file, lineno);

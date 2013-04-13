@@ -23,8 +23,8 @@ void test_find_existent(void)
 	test_start();
 	
 	struct dtree_dev_t *dev = NULL;
-	dev = dtree_byname("ethernet");
-	fail_on_true(dev == NULL, "Could not find the device 'ethernet'");
+	dev = dtree_byname("ethernet@81000000");
+	fail_on_true(dev == NULL, "Could not find the device 'ethernet@81000000'");
 
 	const char  *name = dtree_dev_name(dev);
 	dtree_addr_t base = dtree_dev_base(dev);
@@ -73,14 +73,14 @@ void test_find_with_discriminator(void)
 	test_start();
 
 	struct dtree_dev_t *dev = NULL;
-	dev = dtree_byname("serial-01");
-	fail_on_true(dev == NULL, "Could not find the device 'serial-01'");
+	dev = dtree_byname("serial@84000000");
+	fail_on_true(dev == NULL, "Could not find the device 'serial@84000000'");
 
 	const char  *name = dtree_dev_name(dev);
 	dtree_addr_t base = dtree_dev_base(dev);
 	dtree_addr_t high = dtree_dev_high(dev);
 
-	fail_on_true(high > base, "Invalid high, greater then base (or was the fake device-tree updated?)");
+	fail_on_false(high - base == 0xFFFF, "Invalid high detected for serial@84000000)");
 
 	printf("DEV '%s' at 0x%08X\n", name, base);
 	dtree_dev_free(dev);
@@ -93,8 +93,8 @@ void test_find_debug(void)
 	test_start();
 
 	struct dtree_dev_t *dev = NULL;
-	dev = dtree_byname("debug");
-	fail_on_true(dev == NULL, "Could not find the device 'debug'");
+	dev = dtree_byname("debug@84400000");
+	fail_on_true(dev == NULL, "Could not find the device 'debug@84400000'");
 
 	const char  *name = dtree_dev_name(dev);
 	dtree_addr_t base = dtree_dev_base(dev);
@@ -103,7 +103,7 @@ void test_find_debug(void)
 	printf("DEV '%s' at 0x%08X .. 0x%08X\n", name, base, high);
 	dtree_dev_free(dev);
 
-	fail_on_false(high - base == 0xFFFF, "Invalid high has been read for debug");
+	fail_on_false(high - base == 0xFFFF, "Invalid high has been read for debug@84400000");
 	test_end();
 }
 
