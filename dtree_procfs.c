@@ -1,5 +1,5 @@
 /**
- * dtree_procfs_dirent.c
+ * dtree_procfs.c
  * Copyright (C) 2013 Jan Viktorin
  */
 
