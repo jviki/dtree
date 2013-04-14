@@ -171,7 +171,8 @@ FILE *path_fopen(struct stack **path, const char *fname, const char *mode)
 
 clean_and_exit:
 	dtree_error_from_errno();
-	free((void *) fpath);
+	if(fpath != NULL)
+		free((void *) fpath);
 	return NULL;
 }
 
@@ -190,7 +191,8 @@ int path_stat(struct stack **path, const char *fname, struct stat *st)
 
 clean_and_exit:
 	dtree_error_from_errno();
-	free((void *) fpath);
+	if(fpath != NULL)
+		free((void *) fpath);
 	return 1;
 }
 
@@ -230,7 +232,8 @@ DIR *opendir_on_stack(struct stack **path)
 
 clean_and_exit:
 	dtree_error_from_errno();
-	free((void *) fpath);
+	if(fpath != NULL)
+		free((void *) fpath);
 	return NULL;
 }
 
