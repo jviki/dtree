@@ -91,7 +91,7 @@ void bus_forget(void *mapping)
 
 void bus_write(uint32_t base, uint32_t off, uint32_t value, int len)
 {
-	void *m = bus_access(base, len);
+	void *m = bus_access(base, off + len);
 	if(m == NULL)
 		return;
 
@@ -124,7 +124,7 @@ void bus_write(uint32_t base, uint32_t off, uint32_t value, int len)
 
 uint32_t bus_read(uint32_t base, uint32_t off, int len)
 {
-	void *m = bus_access(base, 4);
+	void *m = bus_access(base, off + 4);
 	if(m == NULL)
 		return 0xFFFFFFFE;
 
