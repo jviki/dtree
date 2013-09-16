@@ -235,7 +235,7 @@ int dev_to_base(const char *dev, dtree_addr_t *base, dtree_addr_t addr, int len)
 			return 1;
 		}
 
-		verbosity_printf(1, "Accessing base address 0x%08X\n", *base);
+		verbosity_printf(1, "Accessing base address 0x%08X", *base);
 		return 0;
 	}
 
