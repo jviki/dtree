@@ -198,7 +198,8 @@ int perform_list(void)
 	return 0;
 }
 
-int perform_read(const char *dev, uint32_t addr, int len)
+static
+int dev_to_base(const char *dev, dtree_addr_t *base, dtree_addr_t addr, int len)
 {
 	struct dtree_dev_t *d = dtree_byname(dev);
 	if(d == NULL) {
@@ -206,48 +207,42 @@ int perform_read(const char *dev, uint32_t addr, int len)
 		return 1;
 	}
 
-	dtree_addr_t base = dtree_dev_base(d);
+	*base = dtree_dev_base(d);
 	dtree_addr_t high = dtree_dev_high(d);
 
-	if(base < high) {
-		if(base + addr + len > high) {
-			verbosity_printf(1, "Address is out of range of the device: 0x%08X (high: 0x%08X)", base + addr, high);
+	if(*base < high) {
+		if(*base + addr + len > high) {
+			verbosity_printf(1, "Address is out of range of the device: 0x%08X (high: 0x%08X)", *base + addr, high);
 			return 2;
 		}
 	}
-
-	verbosity_printf(1, "Action: read, device: '%s', offset: '0x%08X', len: '%d'", dev, addr, len);
-
-	uint32_t value = bus_read(base, addr, len);
-	printf("0x%08X\n", value);
 
 	dtree_dev_free(d);
 	return 0;
 }
 
+int perform_read(const char *dev, uint32_t addr, int len)
+{
+	dtree_addr_t base;
+	if(dev_to_base(dev, &base, addr, len))
+		return 1;
+
+	verbosity_printf(1, "Action: read, device: '%s', offset: '0x%08X', len: '%d'", dev, addr, len);
+
+	uint32_t value = bus_read(base, addr, len);
+	printf("0x%08X\n", value);
+	return 0;
+}
+
 int perform_write(const char *dev, uint32_t addr, uint32_t len, uint32_t value)
 {
-	struct dtree_dev_t *d = dtree_byname(dev);
-	if(d == NULL) {
-		fprintf(stderr, "No device '%s' found\n", dev);
+	dtree_addr_t base;
+	if(dev_to_base(dev, &base, addr, len))
 		return 1;
-	}
-
-	dtree_addr_t base = dtree_dev_base(d);
-	dtree_addr_t high = dtree_dev_high(d);
-
-	if(base < high) {
-		if(base + addr + len > high) {
-			verbosity_printf(1, "Address is out of range of the device: 0x%08X (high: 0x%08X)", base + addr, high);
-			return 2;
-		}
-	}
 
 	verbosity_printf(1, "Action: write, device: '%s', offset: '0x%08X', data: '0x%08X', len: '%d'", dev, addr, value, len);
 
-	bus_write(dtree_dev_base(d), addr, value, len);
-
-	dtree_dev_free(d);
+	bus_write(base, addr, value, len);
 	return 0;
 }
 
@@ -270,12 +265,9 @@ int perform_file_write(const char *dev, uint32_t addr, uint32_t len, FILE *f)
 
 	assert(f != NULL);
 
-	struct dtree_dev_t *d = dtree_byname(dev);
-	if(d == NULL) {
-		fprintf(stderr, "No device '%s' found\n", dev);
-		fclose(f);
+	dtree_addr_t base;
+	if(dev_to_base(dev, &base, addr, len))
 		return 1;
-	}
 
 	while (fgets(s_value, S_BUFFSIZE, f) != NULL) {
 		size_t s_len = strlen(s_value);
@@ -288,24 +280,11 @@ int perform_file_write(const char *dev, uint32_t addr, uint32_t len, FILE *f)
 
 		verbosity_printf(1, "Action: write, device: '%s', offset: '0x%08X', data: '0x%08X', len: '%d'", dev, addr, value, len);
 
-		const dtree_addr_t base = dtree_dev_base(d);
-		const dtree_addr_t high = dtree_dev_high(d);
-
-		if(base < high) {
-			if(base + addr + len > high) {
-				verbosity_printf(1, "Address is out of range of the device: 0x%08X (high: 0x%08X)", base + addr, high);
-				return 2;
-			}
-		}
-
 		bus_write(base, addr, value, len);
-
 		addr += len;
 	}
 
-	dtree_dev_free(d);
 	fclose(f);
-
 	return 0;
 }
 
