@@ -7,6 +7,7 @@
 #include "dtree_util.h"
 
 #include <unistd.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -209,12 +210,33 @@ int perform_list(void)
 }
 
 static
+int dev_as_baseaddr(const char *dev, dtree_addr_t *base)
+{
+	if(dev[0] != '0' || tolower(dev[1]) != 'x')
+		return 1;
+
+	for(size_t i = 2; i < strlen(dev); ++i) {
+		if(!isxdigit(dev[i]))
+			return 2;
+	}
+
+	*base = parse_addr(dev);
+	return 0;
+}
+
+static
 int dev_to_base(const char *dev, dtree_addr_t *base, dtree_addr_t addr, int len)
 {
 	struct dtree_dev_t *d = dtree_byname(dev);
 	if(d == NULL) {
-		fprintf(stderr, "No device '%s' found\n", dev);
-		return 1;
+		if(dev_as_baseaddr(dev, base)) {
+			fprintf(stderr, "No device '%s' found\n", dev);
+			fprintf(stderr, "Nor the device '%s' represents a base address\n", dev);
+			return 1;
+		}
+
+		verbosity_printf(1, "Accessing base address 0x%08X\n", *base);
+		return 0;
 	}
 
 	*base = dtree_dev_base(d);
