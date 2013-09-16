@@ -29,6 +29,16 @@ void verbosity_printf(int level, const char *fmt, ...)
 	va_end(arg);
 }
 
+uint32_t parse_addr(const char *s)
+{
+	return parse_hex(s, strlen(s));
+}
+
+uint32_t parse_value(const char *s)
+{
+	return parse_hex(s, strlen(s));
+}
+
 //
 // Bus access
 //
@@ -291,16 +301,6 @@ int perform_file_write(const char *dev, uint32_t addr, uint32_t len, FILE *f)
 //
 // Main
 //
-
-uint32_t parse_addr(const char *s)
-{
-	return parse_hex(s, strlen(s));
-}
-
-uint32_t parse_value(const char *s)
-{
-	return parse_hex(s, strlen(s));
-}
 
 #define GETOPT_STR "hlr:w:t:a:d:124vV"
 #define DTREE_PATH "/proc/device-tree"
