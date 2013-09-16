@@ -324,12 +324,12 @@ int perform_file_write(const char *dev, uint32_t addr, uint32_t len, FILE *f)
 // Main
 //
 
-#define GETOPT_STR "hlr:w:t:a:d:124vV"
+#define GETOPT_STR "hlr:w:t:a:d:124vVi"
 #define DTREE_PATH "/proc/device-tree"
 
 int print_help(const char *prog)
 {
-	fprintf(stderr, "Usage: %s [ -V | -h | -l | -r <dev> | -w <dev> ] [ -t <path> ] [ -a <addr> ] [ -d <data> ] [ -1 | -2 | -4 ]\n", prog);
+	fprintf(stderr, "Usage: %s [ -V | -h | -l | -i | -r <dev> | -w <dev> ] [ -t <path> ] [ -a <addr> ] [ -d <data> ] [ -1 | -2 | -4 ]\n", prog);
 	fprintf(stderr, "All numbers are treated as hexadecimals with two possible formats, eg.:\n");
 	fprintf(stderr, "* 0xDEEDBEAF\n");
 	fprintf(stderr, "* DEEDBEAF (=> '0x' is optional)\n");
@@ -348,6 +348,8 @@ int print_help(const char *prog)
 	fprintf(stderr, "  $ %s -w timer -a 0x08 -d 0xFF -2\n", prog);
 	fprintf(stderr, "* Write words (4) from stdin (1 hexadecimal per line) to peripheral named 'timer' to offset 0x08\n");
 	fprintf(stderr, "  $ %s -w timer -a 0x08\n", prog);
+	fprintf(stderr, "* Write a word 0x000000FF to peripheral at 0xC0000000 0x00 (ignore device-tree)\n");
+	fprintf(stderr, "  $ %s -w 0xC0000000 -i -a 0x00 -d 0xFF\n", prog);
 	return 0;
 }
 
@@ -417,6 +419,10 @@ int main(int argc, char **argv)
 			dtree = optarg;
 			break;
 
+		case 'i':
+			dtree = NULL;
+			break;
+
 		case 'a':
 			addr = parse_addr(optarg);
 			addr_valid = 1;
@@ -441,10 +447,12 @@ int main(int argc, char **argv)
 	}
 
 	verbosity_printf(1, "Attempt to open device-tree '%s'", dtree);
-	if(dtree_open(dtree) != 0) {
+	if(dtree != NULL && dtree_open(dtree) != 0) {
 		fprintf(stderr, "dtree_open(%s): %s\n", dtree, dtree_errstr());
 		return 1;
 	}
+	else if(dtree == NULL)
+		verbosity_printf(1, "Ignoring device-tree silently (implied by -i)");
 
 	int err = 0;
 
@@ -506,7 +514,8 @@ int main(int argc, char **argv)
 	err = 1;
 
 exit:
-	dtree_close();
+	if(dtree != NULL)
+		dtree_close();
 	return err;
 }
 
