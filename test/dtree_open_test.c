@@ -23,7 +23,7 @@ void test_pass_file(void)
 {
 	test_start();
 	int err = dtree_open(__FILE__);
-	fail_on_error(err, "Passing " __FILE__ " as root dir failed");
+	fail_on_success(err, "Successful when passing " __FILE__ " as root dir");
 	warn_on_true(dtree_iserror(), "Error is indicated by dtree_iserror(), but should not be");
 	dtree_close();
 	test_end();
