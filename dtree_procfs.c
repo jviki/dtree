@@ -155,6 +155,7 @@ const char *file_path_from_stack(struct stack **path, const char *fname)
 
 	return full;
 }
+
 static
 FILE *path_fopen(struct stack **path, const char *fname, const char *mode)
 {
