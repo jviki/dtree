@@ -458,7 +458,7 @@ int dev_parse_compat(struct dtree_dev_t *dev, struct stack **path, const char *f
 static
 struct dtree_dev_t *dev_from_dir(DIR *curr, struct stack **path)
 {
-	struct dtree_dev_t *dev = calloc(1, sizeof(struct dtree_dev_t));
+	struct dtree_dev_t *dev = malloc(sizeof(struct dtree_dev_t));
 	if(dev == NULL) {
 		dtree_error_from_errno();
 		return NULL;
