@@ -155,6 +155,7 @@ const char *file_path_from_stack(struct stack **path, const char *fname)
 
 	return full;
 }
+
 static
 FILE *path_fopen(struct stack **path, const char *fname, const char *mode)
 {
@@ -304,6 +305,7 @@ DIR *go_up_next_dir(struct stack **path)
 		DIR *dir = opendir_on_stack(path);
 		if(dir == NULL) {
 			dtree_error_from_errno();
+			free((void *) dname);
 			return NULL;
 		}
 
@@ -456,7 +458,7 @@ int dev_parse_compat(struct dtree_dev_t *dev, struct stack **path, const char *f
 static
 struct dtree_dev_t *dev_from_dir(DIR *curr, struct stack **path)
 {
-	struct dtree_dev_t *dev = calloc(1, sizeof(struct dtree_dev_t));
+	struct dtree_dev_t *dev = malloc(sizeof(struct dtree_dev_t));
 	if(dev == NULL) {
 		dtree_error_from_errno();
 		return NULL;

@@ -12,7 +12,6 @@ TESTS += dtree_byname_test
 TESTS += dtree_parsehex_test
 TESTS += dtree_bycompat_test
 TESTS += dtree_bcd_test
-TESTS += dtree_procfs_llist_test
 TESTS += dtree_stack_test
 
 all: $(TESTS)
@@ -22,7 +21,6 @@ dtree_byname_test: dtree_byname_test.o libdtree.a
 dtree_parsehex_test: dtree_parsehex_test.c libdtree.a
 dtree_bycompat_test: dtree_bycompat_test.c libdtree.a
 dtree_bcd_test: dtree_bcd_test.c libdtree.a
-dtree_procfs_llist_test: dtree_procfs_llist_test.c ../dtree_error.c ../bcd_arith.c ../dtree.c
 dtree_stack_test: dtree_stack_test.c ../dtree_error.c
 
 ifeq ($(SHELL),/bin/bash)
