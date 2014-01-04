@@ -305,6 +305,7 @@ DIR *go_up_next_dir(struct stack **path)
 		DIR *dir = opendir_on_stack(path);
 		if(dir == NULL) {
 			dtree_error_from_errno();
+			free((void *) dname);
 			return NULL;
 		}
 
