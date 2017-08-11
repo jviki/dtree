@@ -3,8 +3,6 @@
  * Copyright (C) 2013 Jan Viktorin
  */
 
-#define _BSD_SOURCE
-
 #include "dtree.h"
 #include "dtree_error.h"
 #include "dtree_util.h"
